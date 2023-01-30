@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Gis.EnergyBalances", "Ispu.Gis.EnergyBalances\Ispu.Gis.EnergyBalances.csproj", "{21B82628-4458-408E-B220-5CECE6836973}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Gis.EnergyBalances.Infrastructure", "Ispu.Gis.EnergyBalances.Infrastructure\Ispu.Gis.EnergyBalances.Infrastructure.csproj", "{0BEFEA7A-3041-4884-AA83-42B74467F05D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{77A3B7D8-FA8B-408E-BBFD-4D47ABAA8881}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Utils.EnergyBalances.GeoCoding", "Ispu.Utils.EnergyBalances.GeoCoding\Ispu.Utils.EnergyBalances.GeoCoding.csproj", "{5598154E-5C20-46CF-9F79-32CDA8A7C8A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21B82628-4458-408E-B220-5CECE6836973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21B82628-4458-408E-B220-5CECE6836973}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21B82628-4458-408E-B220-5CECE6836973}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21B82628-4458-408E-B220-5CECE6836973}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BEFEA7A-3041-4884-AA83-42B74467F05D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BEFEA7A-3041-4884-AA83-42B74467F05D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BEFEA7A-3041-4884-AA83-42B74467F05D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BEFEA7A-3041-4884-AA83-42B74467F05D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4} = {77A3B7D8-FA8B-408E-BBFD-4D47ABAA8881}
+	EndGlobalSection
+EndGlobal

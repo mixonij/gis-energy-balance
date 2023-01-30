@@ -1,0 +1,20 @@
+.login-form .cont {
+    min-width: 450px;
+}
+.login-form .cont form {
+    margin-top: 2rem;
+}
+.login-form .cont .field {
+    margin-bottom: 1.5rem;
+}
+@media screen and (max-width: 960px) {
+    .login-form .cont {
+        width: 80%;
+    }
+}
+@media screen and (max-width: 640px) {
+    .login-form .cont {
+        width: 100%;
+        min-width: 0;
+    }
+}
