@@ -20,6 +20,18 @@ import {useScale} from "./hooks/scale-hook";
 import {useAdaptive} from "./hooks/adaptive-hook";
 import {useAuthentication} from "./hooks/authentication-hook";
 
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
 export const App = () => {
     const location = useLocation();
     const [layoutColorMode, onChangeThemeClick] = useTheme();

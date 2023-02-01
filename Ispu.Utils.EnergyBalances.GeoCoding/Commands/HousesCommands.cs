@@ -25,6 +25,7 @@ public class HousesCommands
         var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
             "Server=localhost;Port=5432;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
         await using var dbContext = new EnergyBalancesContext(options);
+        await dbContext.Database.MigrateAsync();
 
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("User-Agent", "Ispu.Utils.EnergyBalances.GeoCoding");
@@ -58,7 +59,7 @@ public class HousesCommands
                 var buildingProperties = geoJsonBuilding.Features.First();
                 if (buildingProperties.Properties.Type != "apartments")
                 {
-                    await Task.Delay(200);
+                    //await Task.Delay(200);
                     continue;
                 }
 
@@ -71,11 +72,11 @@ public class HousesCommands
                         buildingProperties.Geometry.Coordinates[1])
                 };
 
-                _logger.Information("Получено дом: {Building}", house.Address);
+                _logger.Information("Получен дом: {Building}", house.Address);
 
                 await dbContext.Buildings.AddAsync(building);
 
-                await Task.Delay(200);
+                //await Task.Delay(200);
             }
             catch
             {

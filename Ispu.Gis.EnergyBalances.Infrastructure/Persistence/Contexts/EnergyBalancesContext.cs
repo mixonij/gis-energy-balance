@@ -28,6 +28,13 @@ public partial class EnergyBalancesContext : DbContext
 
     public virtual DbSet<City> Cities { get; set; } = null!;
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseNpgsql(
+            "Server=localhost;Port=5432;Database=energy_balances;UserId=postgres;Password=postgres;");
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Building>(entity =>
