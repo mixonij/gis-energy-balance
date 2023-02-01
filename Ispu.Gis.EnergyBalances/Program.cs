@@ -1,8 +1,14 @@
+using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<EnergyBalancesContext>(options => options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 

@@ -10,5 +10,5 @@ Log.Logger = new LoggerConfiguration()
 
 // Парсим аргументы командной строки и вызываем команды
 await Parser.Default.ParseArguments<HousesOptions>(args)
-    .MapResult(housesOptions => HousesCommands.ProcessRowsAsync(housesOptions),
+    .MapResult(HousesCommands.ProcessRowsAsync,
         _ => Task.FromResult(1));
