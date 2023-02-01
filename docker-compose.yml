@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  ispu.gis.energybalances:
+    image: ${DOCKER_REGISTRY-}ispugisenergybalances
+    build:
+      context: .
+      dockerfile: Ispu.Gis.EnergyBalances/Dockerfile
