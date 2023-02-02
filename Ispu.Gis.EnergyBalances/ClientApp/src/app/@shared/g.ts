@@ -12,7 +12,8 @@ import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 
 export interface IGeoDataService {
-    getHouses(): Promise<Building[] | null>;
+    getHouses(cityId: number): Promise<Building[] | null>;
+    getCities(): Promise<City[] | null>;
 }
 
 export class GeoDataService implements IGeoDataService {
@@ -28,8 +29,11 @@ export class GeoDataService implements IGeoDataService {
 
     }
 
-    getHouses(  cancelToken?: CancelToken | undefined): Promise<Building[] | null> {
-        let url_ = this.baseUrl + "/api/geodata/GetHouses";
+    getHouses(cityId: number , cancelToken?: CancelToken | undefined): Promise<Building[] | null> {
+        let url_ = this.baseUrl + "/api/geodata/GetHouses/{cityId}";
+        if (cityId === undefined || cityId === null)
+            throw new Error("The parameter 'cityId' must be defined.");
+        url_ = url_.replace("{cityId}", encodeURIComponent("" + cityId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: AxiosRequestConfig = {
@@ -81,6 +85,61 @@ export class GeoDataService implements IGeoDataService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
         return Promise.resolve<Building[] | null>(null as any);
+    }
+
+    getCities(  cancelToken?: CancelToken | undefined): Promise<City[] | null> {
+        let url_ = this.baseUrl + "/api/geodata/GetCities";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "application/json"
+            },
+            cancelToken
+        };
+
+        return this.instance.request(options_).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processGetCities(_response);
+        });
+    }
+
+    protected processGetCities(response: AxiosResponse): Promise<City[] | null> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(City.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return Promise.resolve<City[] | null>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<City[] | null>(null as any);
     }
 }
 
@@ -178,8 +237,10 @@ export interface INpgsqlPoint {
 
 export class City implements ICity {
     id!: number;
-    name!: string;
-    nameRussian?: string | undefined;
+    nameRussian!: string;
+    northWestBound!: NpgsqlPoint;
+    southEastBound!: NpgsqlPoint;
+    minZoom!: number;
     buildings!: Building[];
 
     constructor(data?: ICity) {
@@ -190,6 +251,8 @@ export class City implements ICity {
             }
         }
         if (!data) {
+            this.northWestBound = new NpgsqlPoint();
+            this.southEastBound = new NpgsqlPoint();
             this.buildings = [];
         }
     }
@@ -197,8 +260,10 @@ export class City implements ICity {
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
-            this.name = _data["name"];
             this.nameRussian = _data["nameRussian"];
+            this.northWestBound = _data["northWestBound"] ? NpgsqlPoint.fromJS(_data["northWestBound"]) : new NpgsqlPoint();
+            this.southEastBound = _data["southEastBound"] ? NpgsqlPoint.fromJS(_data["southEastBound"]) : new NpgsqlPoint();
+            this.minZoom = _data["minZoom"];
             if (Array.isArray(_data["buildings"])) {
                 this.buildings = [] as any;
                 for (let item of _data["buildings"])
@@ -217,8 +282,10 @@ export class City implements ICity {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
-        data["name"] = this.name;
         data["nameRussian"] = this.nameRussian;
+        data["northWestBound"] = this.northWestBound ? this.northWestBound.toJSON() : <any>undefined;
+        data["southEastBound"] = this.southEastBound ? this.southEastBound.toJSON() : <any>undefined;
+        data["minZoom"] = this.minZoom;
         if (Array.isArray(this.buildings)) {
             data["buildings"] = [];
             for (let item of this.buildings)
@@ -230,8 +297,10 @@ export class City implements ICity {
 
 export interface ICity {
     id: number;
-    name: string;
-    nameRussian?: string | undefined;
+    nameRussian: string;
+    northWestBound: NpgsqlPoint;
+    southEastBound: NpgsqlPoint;
+    minZoom: number;
     buildings: Building[];
 }
 

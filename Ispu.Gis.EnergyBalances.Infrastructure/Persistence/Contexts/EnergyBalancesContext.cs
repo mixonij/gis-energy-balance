@@ -64,8 +64,10 @@ public partial class EnergyBalancesContext : DbContext
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
-            entity.Property(e => e.Name).HasColumnName("name");
+            entity.Property(e => e.NorthWestBound).HasColumnName("north_west_bound");
+            entity.Property(e => e.SouthEastBound).HasColumnName("south_east_bound");
             entity.Property(e => e.NameRussian).HasColumnName("name_russian");
+            entity.Property(e => e.MinZoom).HasColumnName("MinZoom");
         });
 
         OnModelCreatingPartial(modelBuilder);

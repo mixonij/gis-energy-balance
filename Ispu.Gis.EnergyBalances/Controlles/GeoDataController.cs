@@ -7,7 +7,7 @@ namespace Ispu.Gis.EnergyBalances.Controlles;
 
 [ApiController]
 [Route("api/geodata")]
-public class GeoDataController: ControllerBase
+public class GeoDataController : ControllerBase
 {
     private readonly EnergyBalancesContext _db;
 
@@ -16,9 +16,15 @@ public class GeoDataController: ControllerBase
         _db = db;
     }
 
-    [HttpGet("[action]")]
-    public Task<List<Building>> GetHouses()
+    [HttpGet("[action]/{cityId}")]
+    public Task<List<Building>> GetHouses(int cityId)
     {
-        return _db.Buildings.ToListAsync();
+        return _db.Buildings.Where(x => x.CityId == cityId).ToListAsync();
+    }
+
+    [HttpGet("[action]")]
+    public Task<List<City>> GetCities()
+    {
+        return _db.Cities.ToListAsync();
     }
 }

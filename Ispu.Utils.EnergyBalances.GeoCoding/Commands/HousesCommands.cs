@@ -30,7 +30,7 @@ public class HousesCommands
         using var httpClient = new HttpClient();
         httpClient.DefaultRequestHeaders.Add("User-Agent", "Ispu.Utils.EnergyBalances.GeoCoding");
 
-        var ivanovoCity = await dbContext.Cities.FirstOrDefaultAsync(x => x.Name == "Ivanovo");
+        var ivanovoCity = await dbContext.Cities.FirstOrDefaultAsync(x => x.NameRussian == "Иваново");
         if (ivanovoCity is null)
         {
             return 0;

@@ -2,6 +2,7 @@
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
@@ -11,9 +12,11 @@ using NpgsqlTypes;
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 {
     [DbContext(typeof(EnergyBalancesContext))]
-    partial class EnergyBalancesContextModelSnapshot : ModelSnapshot
+    [Migration("20230202080116_NewCityModel")]
+    partial class NewCityModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,9 +55,6 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("MinZoom")
-                        .HasColumnType("integer");
 
                     b.Property<string>("NameRussian")
                         .IsRequired()

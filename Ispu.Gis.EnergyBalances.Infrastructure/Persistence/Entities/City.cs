@@ -1,12 +1,19 @@
-﻿namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+﻿using NpgsqlTypes;
 
-public sealed partial class City
+namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+
+public sealed class City
 {
     public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
-
-    public string? NameRussian { get; set; }
+    public string NameRussian { get; set; } = null!;
+    
+    public NpgsqlPoint NorthWestBound { get; set; }
+    
+    public NpgsqlPoint SouthEastBound { get; set; }
+    
+    
+    public int MinZoom { get; set; }
 
     public ICollection<Building> Buildings { get; } = new List<Building>();
 }
