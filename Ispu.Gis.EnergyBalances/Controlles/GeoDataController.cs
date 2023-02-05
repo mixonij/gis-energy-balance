@@ -27,4 +27,10 @@ public class GeoDataController : ControllerBase
     {
         return _db.Cities.ToListAsync();
     }
+    
+    [HttpGet("[action]/{cityId}")]
+    public Task<List<Area>> GetAreas(int cityId)
+    {
+        return _db.Areas.Where(x => x.CityId == cityId).ToListAsync();
+    }
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
 using System.Web;
 using CsvHelper;
@@ -9,6 +10,9 @@ using Ispu.Utils.EnergyBalances.GeoCoding.Models;
 using Ispu.Utils.EnergyBalances.GeoCoding.Options;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
+using OsmSharp;
+using OsmSharp.Complete;
+using OsmSharp.Streams;
 using Serilog;
 
 namespace Ispu.Utils.EnergyBalances.GeoCoding.Commands;
@@ -21,6 +25,22 @@ public class HousesCommands
     {
         var records = GetFileRecords(housesOptions);
         _logger.Information("Получено записей: {RecordsCount}", records.Count);
+
+
+        await using var fileStream = File.OpenRead(housesOptions.PbfPath);
+        // create source stream.
+        var source = new PBFOsmStreamSource(fileStream);
+
+        var completeSource = source.ToComplete();
+        var filteredWays = (from osmGeo in completeSource select osmGeo).Where(x => x.Type == OsmGeoType.Way
+            && x.Tags.Any(y => y.Key is "addr:street" or "addr:housenumber")
+            && x is CompleteWay).Select(x=>x as CompleteWay).ToList();
+        
+        var areas = (from osmGeo in completeSource select osmGeo).Where(x => x.Type == OsmGeoType.Way
+                                                                             && x.Tags.Any(y => y.Key is "landuse" && y.Value == "residential")
+                                                                             && x.Tags.Any(y=> y.Key is "residential" && y.Value == "urban"
+                                                                             && x is CompleteWay)).Select(x=> x as CompleteWay).ToList();
+        
 
         var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
             "Server=localhost;Port=5432;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
@@ -36,52 +56,63 @@ public class HousesCommands
             return 0;
         }
 
+        foreach (var (way, index) in filteredWays.Select((x, index)=>(x, index)))
+        {
+            //var street = way.Tags.First(x => x.Key == "addr:street").Value;
+            //var houseNumber = way.Tags.First(x => x.Key == "addr:housenumber").Value;
+
+            var polygon = way.Nodes.Select(x => new NpgsqlPoint(x.Latitude.Value, x.Longitude.Value))
+                .ToArray();
+
+            var building = new Building
+            {
+                City = ivanovoCity,
+                CityId = ivanovoCity.Id,
+                PolygonCoordinates = polygon,
+                Coordinates = new NpgsqlPoint(0,0)
+            };
+            
+            await dbContext.Buildings.AddAsync(building);
+        }
+
+        foreach (var area in areas)
+        { 
+            var polygon = area.Nodes.Select(x => new NpgsqlPoint(x.Latitude.Value, x.Longitude.Value))
+                .ToArray();
+        
+            var cityArea = new Area
+            {
+                CityId = ivanovoCity.Id,
+                PolygonCoordinates = polygon,
+            };
+            
+            await dbContext.Areas.AddAsync(cityArea);
+        }
+        
+
         foreach (var house in records)
         {
-            try
-            {
-                var response = await httpClient.GetAsync(
-                    $"https://nominatim.openstreetmap.org/search?street={house.Street} {house.ShortNameStreet} {house.HouseNumber}&city={house.City}&country=Russia&format=geojson");
-                if (!response.IsSuccessStatusCode)
-                {
-                    //await Task.Delay(1000);
-                    continue;
-                }
-
-                var responseStream = await response.Content.ReadAsStreamAsync();
-                var geoJsonBuilding = await JsonSerializer.DeserializeAsync<GeoJsonBuildingResponse>(responseStream);
-                if (geoJsonBuilding is null || !geoJsonBuilding.Features.Any())
-                {
-                    //await Task.Delay(1000);
-                    continue;
-                }
-
-                var buildingProperties = geoJsonBuilding.Features.First();
-                if (buildingProperties.Properties.Type != "apartments")
-                {
-                    //await Task.Delay(200);
-                    continue;
-                }
-
-                var building = new Building
-                {
-                    Id = house.Id,
-                    City = ivanovoCity,
-                    CityId = ivanovoCity.Id,
-                    Coordinates = new NpgsqlPoint(buildingProperties.Geometry.Coordinates[0],
-                        buildingProperties.Geometry.Coordinates[1])
-                };
-
-                _logger.Information("Получен дом: {Building}", house.Address);
-
-                await dbContext.Buildings.AddAsync(building);
-
-                //await Task.Delay(200);
-            }
-            catch
-            {
-                // Ничего не делаем
-            }
+            // try
+            // {
+            //     var building = new Building
+            //     {
+            //         Id = house.Id,
+            //         City = ivanovoCity,
+            //         CityId = ivanovoCity.Id,
+            //         Coordinates = new NpgsqlPoint(buildingProperties.Geometry.Coordinates[0],
+            //             buildingProperties.Geometry.Coordinates[1])
+            //     };
+            //
+            //     _logger.Information("Получен дом: {Building}", house.Address);
+            //
+            //     await dbContext.Buildings.AddAsync(building);
+            //
+            //     //await Task.Delay(200);
+            // }
+            // catch
+            // {
+            //     // Ничего не делаем
+            // }
         }
 
         await dbContext.SaveChangesAsync();

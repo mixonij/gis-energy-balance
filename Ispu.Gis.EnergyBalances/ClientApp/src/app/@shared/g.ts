@@ -14,6 +14,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } fr
 export interface IGeoDataService {
     getHouses(cityId: number): Promise<Building[] | null>;
     getCities(): Promise<City[] | null>;
+    getAreas(cityId: number): Promise<Area[] | null>;
 }
 
 export class GeoDataService implements IGeoDataService {
@@ -141,12 +142,72 @@ export class GeoDataService implements IGeoDataService {
         }
         return Promise.resolve<City[] | null>(null as any);
     }
+
+    getAreas(cityId: number , cancelToken?: CancelToken | undefined): Promise<Area[] | null> {
+        let url_ = this.baseUrl + "/api/geodata/GetAreas/{cityId}";
+        if (cityId === undefined || cityId === null)
+            throw new Error("The parameter 'cityId' must be defined.");
+        url_ = url_.replace("{cityId}", encodeURIComponent("" + cityId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "application/json"
+            },
+            cancelToken
+        };
+
+        return this.instance.request(options_).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processGetAreas(_response);
+        });
+    }
+
+    protected processGetAreas(response: AxiosResponse): Promise<Area[] | null> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Area.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return Promise.resolve<Area[] | null>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<Area[] | null>(null as any);
+    }
 }
 
 export class Building implements IBuilding {
     id!: number;
     cityId!: number;
     coordinates!: NpgsqlPoint;
+    polygonCoordinates!: NpgsqlPoint[];
+    buildingsInfos!: BuildingsInfo[];
     city!: City;
 
     constructor(data?: IBuilding) {
@@ -158,6 +219,8 @@ export class Building implements IBuilding {
         }
         if (!data) {
             this.coordinates = new NpgsqlPoint();
+            this.polygonCoordinates = [];
+            this.buildingsInfos = [];
             this.city = new City();
         }
     }
@@ -167,6 +230,16 @@ export class Building implements IBuilding {
             this.id = _data["id"];
             this.cityId = _data["cityId"];
             this.coordinates = _data["coordinates"] ? NpgsqlPoint.fromJS(_data["coordinates"]) : new NpgsqlPoint();
+            if (Array.isArray(_data["polygonCoordinates"])) {
+                this.polygonCoordinates = [] as any;
+                for (let item of _data["polygonCoordinates"])
+                    this.polygonCoordinates!.push(NpgsqlPoint.fromJS(item));
+            }
+            if (Array.isArray(_data["buildingsInfos"])) {
+                this.buildingsInfos = [] as any;
+                for (let item of _data["buildingsInfos"])
+                    this.buildingsInfos!.push(BuildingsInfo.fromJS(item));
+            }
             this.city = _data["city"] ? City.fromJS(_data["city"]) : new City();
         }
     }
@@ -183,6 +256,16 @@ export class Building implements IBuilding {
         data["id"] = this.id;
         data["cityId"] = this.cityId;
         data["coordinates"] = this.coordinates ? this.coordinates.toJSON() : <any>undefined;
+        if (Array.isArray(this.polygonCoordinates)) {
+            data["polygonCoordinates"] = [];
+            for (let item of this.polygonCoordinates)
+                data["polygonCoordinates"].push(item.toJSON());
+        }
+        if (Array.isArray(this.buildingsInfos)) {
+            data["buildingsInfos"] = [];
+            for (let item of this.buildingsInfos)
+                data["buildingsInfos"].push(item.toJSON());
+        }
         data["city"] = this.city ? this.city.toJSON() : <any>undefined;
         return data;
     }
@@ -192,6 +275,8 @@ export interface IBuilding {
     id: number;
     cityId: number;
     coordinates: NpgsqlPoint;
+    polygonCoordinates: NpgsqlPoint[];
+    buildingsInfos: BuildingsInfo[];
     city: City;
 }
 
@@ -233,6 +318,57 @@ export class NpgsqlPoint implements INpgsqlPoint {
 export interface INpgsqlPoint {
     x: number;
     y: number;
+}
+
+export class BuildingsInfo implements IBuildingsInfo {
+    id!: number;
+    buildingId!: number;
+    builtYear?: number | undefined;
+    building!: Building;
+
+    constructor(data?: IBuildingsInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.building = new Building();
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.buildingId = _data["buildingId"];
+            this.builtYear = _data["builtYear"];
+            this.building = _data["building"] ? Building.fromJS(_data["building"]) : new Building();
+        }
+    }
+
+    static fromJS(data: any): BuildingsInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new BuildingsInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["buildingId"] = this.buildingId;
+        data["builtYear"] = this.builtYear;
+        data["building"] = this.building ? this.building.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IBuildingsInfo {
+    id: number;
+    buildingId: number;
+    builtYear?: number | undefined;
+    building: Building;
 }
 
 export class City implements ICity {
@@ -302,6 +438,61 @@ export interface ICity {
     southEastBound: NpgsqlPoint;
     minZoom: number;
     buildings: Building[];
+}
+
+export class Area implements IArea {
+    id!: number;
+    cityId!: number;
+    polygonCoordinates!: NpgsqlPoint[];
+
+    constructor(data?: IArea) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.polygonCoordinates = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.cityId = _data["cityId"];
+            if (Array.isArray(_data["polygonCoordinates"])) {
+                this.polygonCoordinates = [] as any;
+                for (let item of _data["polygonCoordinates"])
+                    this.polygonCoordinates!.push(NpgsqlPoint.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Area {
+        data = typeof data === 'object' ? data : {};
+        let result = new Area();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["cityId"] = this.cityId;
+        if (Array.isArray(this.polygonCoordinates)) {
+            data["polygonCoordinates"] = [];
+            for (let item of this.polygonCoordinates)
+                data["polygonCoordinates"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IArea {
+    id: number;
+    cityId: number;
+    polygonCoordinates: NpgsqlPoint[];
 }
 
 export class ApiException extends Error {
