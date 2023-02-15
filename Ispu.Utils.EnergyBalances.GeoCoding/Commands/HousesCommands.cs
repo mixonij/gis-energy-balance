@@ -28,17 +28,17 @@ public class HousesCommands
 
 
         await using var fileStream = File.OpenRead(housesOptions.PbfPath);
-        // create source stream.
         var source = new PBFOsmStreamSource(fileStream);
 
         var completeSource = source.ToComplete();
-        var filteredWays = (from osmGeo in completeSource select osmGeo).Where(x => x.Type == OsmGeoType.Way
+        
+        var houses = (from osmGeo in completeSource select osmGeo).Where(x => x.Type == OsmGeoType.Way
             && x.Tags.Any(y => y.Key is "addr:street" or "addr:housenumber")
             && x is CompleteWay).Select(x=>x as CompleteWay).ToList();
         
         var areas = (from osmGeo in completeSource select osmGeo).Where(x => x.Type == OsmGeoType.Way
                                                                              && x.Tags.Any(y => y.Key is "landuse" && y.Value == "residential")
-                                                                             && x.Tags.Any(y=> y.Key is "residential" && y.Value == "urban"
+                                                                             && x.Tags.Any(y=> y.Key is "residential" && y.Value is "urban" or "rural"
                                                                              && x is CompleteWay)).Select(x=> x as CompleteWay).ToList();
         
 
@@ -47,19 +47,28 @@ public class HousesCommands
         await using var dbContext = new EnergyBalancesContext(options);
         await dbContext.Database.MigrateAsync();
 
-        using var httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.Add("User-Agent", "Ispu.Utils.EnergyBalances.GeoCoding");
-
         var ivanovoCity = await dbContext.Cities.FirstOrDefaultAsync(x => x.NameRussian == "Иваново");
         if (ivanovoCity is null)
         {
             return 0;
         }
 
-        foreach (var (way, index) in filteredWays.Select((x, index)=>(x, index)))
+        foreach (var (way, index) in houses.Select((x, index)=>(x, index)))
         {
-            //var street = way.Tags.First(x => x.Key == "addr:street").Value;
-            //var houseNumber = way.Tags.First(x => x.Key == "addr:housenumber").Value;
+            var street = way.Tags.FirstOrDefault(x => x.Key == "addr:street").Value;
+            var houseNumber = way.Tags.FirstOrDefault(x => x.Key == "addr:housenumber").Value;
+
+            if (street is null || houseNumber is null)
+            {
+                continue;
+            }
+
+            var house = records.FirstOrDefault(x =>
+                x.HouseNumber == houseNumber && (x.Street.Contains(street) || street.Contains(x.Street)));
+            if (house is null || !house.QuartersCount.HasValue || !house.Area.HasValue)
+            {
+                continue;
+            }
 
             var polygon = way.Nodes.Select(x => new NpgsqlPoint(x.Latitude.Value, x.Longitude.Value))
                 .ToArray();
@@ -73,6 +82,17 @@ public class HousesCommands
             };
             
             await dbContext.Buildings.AddAsync(building);
+
+            await dbContext.SaveChangesAsync();
+
+            var buildingInfo = new BuildingsInfo
+            {
+                BuildingId = building.Id,
+                Area = house.Area.Value,
+                ResidentsCount = house.QuartersCount.Value * 3,
+            };
+            
+            await dbContext.BuildingsInfos.AddAsync(buildingInfo);
         }
 
         foreach (var area in areas)
@@ -87,32 +107,6 @@ public class HousesCommands
             };
             
             await dbContext.Areas.AddAsync(cityArea);
-        }
-        
-
-        foreach (var house in records)
-        {
-            // try
-            // {
-            //     var building = new Building
-            //     {
-            //         Id = house.Id,
-            //         City = ivanovoCity,
-            //         CityId = ivanovoCity.Id,
-            //         Coordinates = new NpgsqlPoint(buildingProperties.Geometry.Coordinates[0],
-            //             buildingProperties.Geometry.Coordinates[1])
-            //     };
-            //
-            //     _logger.Information("Получен дом: {Building}", house.Address);
-            //
-            //     await dbContext.Buildings.AddAsync(building);
-            //
-            //     //await Task.Delay(200);
-            // }
-            // catch
-            // {
-            //     // Ничего не делаем
-            // }
         }
 
         await dbContext.SaveChangesAsync();

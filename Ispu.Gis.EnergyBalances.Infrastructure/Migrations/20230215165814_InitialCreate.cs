@@ -69,7 +69,9 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     buildingid = table.Column<int>(name: "building_id", type: "integer", nullable: false),
-                    builtyear = table.Column<int>(name: "built_year", type: "integer", nullable: true)
+                    builtyear = table.Column<int>(name: "built_year", type: "integer", nullable: true),
+                    residentscount = table.Column<int>(name: "residents_count", type: "integer", nullable: false),
+                    area = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 {
     [DbContext(typeof(EnergyBalancesContext))]
-    [Migration("20230205191035_InitialCreate")]
+    [Migration("20230215165814_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -91,6 +91,10 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
+                    b.Property<float>("Area")
+                        .HasColumnType("real")
+                        .HasColumnName("area");
+
                     b.Property<int>("BuildingId")
                         .HasColumnType("integer")
                         .HasColumnName("building_id");
@@ -99,10 +103,14 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("built_year");
 
+                    b.Property<int>("ResidentsCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("residents_count");
+
                     b.HasKey("Id")
                         .HasName("buildings_info_pkey");
 
-                    b.HasIndex("BuildingId");
+                    b.HasIndex(new[] { "BuildingId" }, "IX_buildings_info_building_id");
 
                     b.ToTable("buildings_info", (string)null);
                 });

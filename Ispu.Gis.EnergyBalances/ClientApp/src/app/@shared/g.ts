@@ -15,6 +15,7 @@ export interface IGeoDataService {
     getHouses(cityId: number): Promise<Building[] | null>;
     getCities(): Promise<City[] | null>;
     getAreas(cityId: number): Promise<Area[] | null>;
+    getConnections(buildingId: number): Promise<BuildingPowerConnections | null>;
 }
 
 export class GeoDataService implements IGeoDataService {
@@ -200,6 +201,57 @@ export class GeoDataService implements IGeoDataService {
         }
         return Promise.resolve<Area[] | null>(null as any);
     }
+
+    getConnections(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingPowerConnections | null> {
+        let url_ = this.baseUrl + "/api/geodata/GetConnections/{buildingId}";
+        if (buildingId === undefined || buildingId === null)
+            throw new Error("The parameter 'buildingId' must be defined.");
+        url_ = url_.replace("{buildingId}", encodeURIComponent("" + buildingId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "application/json"
+            },
+            cancelToken
+        };
+
+        return this.instance.request(options_).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processGetConnections(_response);
+        });
+    }
+
+    protected processGetConnections(response: AxiosResponse): Promise<BuildingPowerConnections | null> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = resultData200 ? BuildingPowerConnections.fromJS(resultData200) : <any>null;
+            return Promise.resolve<BuildingPowerConnections | null>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<BuildingPowerConnections | null>(null as any);
+    }
 }
 
 export class Building implements IBuilding {
@@ -324,6 +376,8 @@ export class BuildingsInfo implements IBuildingsInfo {
     id!: number;
     buildingId!: number;
     builtYear?: number | undefined;
+    residentsCount!: number;
+    area!: number;
     building!: Building;
 
     constructor(data?: IBuildingsInfo) {
@@ -343,6 +397,8 @@ export class BuildingsInfo implements IBuildingsInfo {
             this.id = _data["id"];
             this.buildingId = _data["buildingId"];
             this.builtYear = _data["builtYear"];
+            this.residentsCount = _data["residentsCount"];
+            this.area = _data["area"];
             this.building = _data["building"] ? Building.fromJS(_data["building"]) : new Building();
         }
     }
@@ -359,6 +415,8 @@ export class BuildingsInfo implements IBuildingsInfo {
         data["id"] = this.id;
         data["buildingId"] = this.buildingId;
         data["builtYear"] = this.builtYear;
+        data["residentsCount"] = this.residentsCount;
+        data["area"] = this.area;
         data["building"] = this.building ? this.building.toJSON() : <any>undefined;
         return data;
     }
@@ -368,6 +426,8 @@ export interface IBuildingsInfo {
     id: number;
     buildingId: number;
     builtYear?: number | undefined;
+    residentsCount: number;
+    area: number;
     building: Building;
 }
 
@@ -493,6 +553,130 @@ export interface IArea {
     id: number;
     cityId: number;
     polygonCoordinates: NpgsqlPoint[];
+}
+
+export class BuildingPowerConnections implements IBuildingPowerConnections {
+    gasCookingConsumption!: number;
+    gasWaterHeatingConsumptionWithoutBoiler!: number;
+    gasHeatingConsumption!: number;
+    electricityCooking!: number;
+    electricityWaterHeating!: number;
+    centralHeating!: number;
+    centralWater!: number;
+    gasCookingConsumptionFuel!: number;
+    gasWaterHeatingConsumptionWithoutBoilerFuel!: number;
+    gasHeatingConsumptionFuel!: number;
+    electricityCookingFuel!: number;
+    electricityWaterHeatingFuel!: number;
+    centralHeatingFuel!: number;
+    centralWaterFuel!: number;
+    s1!: number;
+    s2!: number;
+    s3!: number;
+    s4!: number;
+    s5!: number;
+    s6!: number;
+    s7!: number;
+    s8!: number;
+    s9!: number;
+
+    constructor(data?: IBuildingPowerConnections) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.gasCookingConsumption = _data["gasCookingConsumption"];
+            this.gasWaterHeatingConsumptionWithoutBoiler = _data["gasWaterHeatingConsumptionWithoutBoiler"];
+            this.gasHeatingConsumption = _data["gasHeatingConsumption"];
+            this.electricityCooking = _data["electricityCooking"];
+            this.electricityWaterHeating = _data["electricityWaterHeating"];
+            this.centralHeating = _data["centralHeating"];
+            this.centralWater = _data["centralWater"];
+            this.gasCookingConsumptionFuel = _data["gasCookingConsumptionFuel"];
+            this.gasWaterHeatingConsumptionWithoutBoilerFuel = _data["gasWaterHeatingConsumptionWithoutBoilerFuel"];
+            this.gasHeatingConsumptionFuel = _data["gasHeatingConsumptionFuel"];
+            this.electricityCookingFuel = _data["electricityCookingFuel"];
+            this.electricityWaterHeatingFuel = _data["electricityWaterHeatingFuel"];
+            this.centralHeatingFuel = _data["centralHeatingFuel"];
+            this.centralWaterFuel = _data["centralWaterFuel"];
+            this.s1 = _data["s1"];
+            this.s2 = _data["s2"];
+            this.s3 = _data["s3"];
+            this.s4 = _data["s4"];
+            this.s5 = _data["s5"];
+            this.s6 = _data["s6"];
+            this.s7 = _data["s7"];
+            this.s8 = _data["s8"];
+            this.s9 = _data["s9"];
+        }
+    }
+
+    static fromJS(data: any): BuildingPowerConnections {
+        data = typeof data === 'object' ? data : {};
+        let result = new BuildingPowerConnections();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["gasCookingConsumption"] = this.gasCookingConsumption;
+        data["gasWaterHeatingConsumptionWithoutBoiler"] = this.gasWaterHeatingConsumptionWithoutBoiler;
+        data["gasHeatingConsumption"] = this.gasHeatingConsumption;
+        data["electricityCooking"] = this.electricityCooking;
+        data["electricityWaterHeating"] = this.electricityWaterHeating;
+        data["centralHeating"] = this.centralHeating;
+        data["centralWater"] = this.centralWater;
+        data["gasCookingConsumptionFuel"] = this.gasCookingConsumptionFuel;
+        data["gasWaterHeatingConsumptionWithoutBoilerFuel"] = this.gasWaterHeatingConsumptionWithoutBoilerFuel;
+        data["gasHeatingConsumptionFuel"] = this.gasHeatingConsumptionFuel;
+        data["electricityCookingFuel"] = this.electricityCookingFuel;
+        data["electricityWaterHeatingFuel"] = this.electricityWaterHeatingFuel;
+        data["centralHeatingFuel"] = this.centralHeatingFuel;
+        data["centralWaterFuel"] = this.centralWaterFuel;
+        data["s1"] = this.s1;
+        data["s2"] = this.s2;
+        data["s3"] = this.s3;
+        data["s4"] = this.s4;
+        data["s5"] = this.s5;
+        data["s6"] = this.s6;
+        data["s7"] = this.s7;
+        data["s8"] = this.s8;
+        data["s9"] = this.s9;
+        return data;
+    }
+}
+
+export interface IBuildingPowerConnections {
+    gasCookingConsumption: number;
+    gasWaterHeatingConsumptionWithoutBoiler: number;
+    gasHeatingConsumption: number;
+    electricityCooking: number;
+    electricityWaterHeating: number;
+    centralHeating: number;
+    centralWater: number;
+    gasCookingConsumptionFuel: number;
+    gasWaterHeatingConsumptionWithoutBoilerFuel: number;
+    gasHeatingConsumptionFuel: number;
+    electricityCookingFuel: number;
+    electricityWaterHeatingFuel: number;
+    centralHeatingFuel: number;
+    centralWaterFuel: number;
+    s1: number;
+    s2: number;
+    s3: number;
+    s4: number;
+    s5: number;
+    s6: number;
+    s7: number;
+    s8: number;
+    s9: number;
 }
 
 export class ApiException extends Error {

@@ -1,7 +1,9 @@
-﻿using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
+﻿using Ispu.Gis.EnergyBalances.Domain.Entities;
+using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Building = Ispu.Gis.EnergyBalances.Domain.Entities.Building;
 
 namespace Ispu.Gis.EnergyBalances.Controlles;
 
@@ -17,7 +19,7 @@ public class GeoDataController : ControllerBase
     }
 
     [HttpGet("[action]/{cityId}")]
-    public Task<List<Building>> GetHouses(int cityId)
+    public Task<List<Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building>> GetHouses(int cityId)
     {
         return _db.Buildings.Where(x => x.CityId == cityId).ToListAsync();
     }
@@ -32,5 +34,20 @@ public class GeoDataController : ControllerBase
     public Task<List<Area>> GetAreas(int cityId)
     {
         return _db.Areas.Where(x => x.CityId == cityId).ToListAsync();
+    }
+
+    [HttpGet("[action]/{buildingId}")]
+    public async Task<BuildingPowerConnections> GetConnections(int buildingId)
+    {
+        var buildingInfo = await _db.BuildingsInfos.FirstAsync(x => x.BuildingId == buildingId);
+        var building = new Building
+        {
+            LivingSquare = buildingInfo.Area,
+            ResidentsCount = buildingInfo.ResidentsCount
+        };
+
+        var pC = new BuildingPowerConnections(building);
+
+        return pC;
     }
 }

@@ -33,7 +33,13 @@ public class House
     /// </summary>
     [Name("house_number")]
     public string HouseNumber { get; set; }
-
+    
+    [Name("living_quarters_count")]
+    public int? QuartersCount { get; set; }
+    
+    [Name("area_residential")]
+    public float? Area { get; set; }
+    
     /// <summary>
     /// Полнгый адрес
     /// </summary>

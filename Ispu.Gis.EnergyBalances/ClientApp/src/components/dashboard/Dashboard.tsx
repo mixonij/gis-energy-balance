@@ -80,11 +80,13 @@ const Dashboard = (props: any) => {
                 ) : coords ? (
                     <MapContainer
                         attributionControl={false}
+                        trackResize={true}
                         center={[coords?.latitude!, coords?.longitude!]}
                         zoom={11}
                         minZoom={selectedCity?.minZoom === undefined || !selectedCity?.minZoom ? 1 : selectedCity.minZoom}
                         scrollWheelZoom={true}>
                         <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <LayersControl position="topright">

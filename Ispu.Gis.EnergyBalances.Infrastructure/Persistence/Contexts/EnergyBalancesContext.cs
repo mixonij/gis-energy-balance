@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 
-public class EnergyBalancesContext : DbContext
+public partial class EnergyBalancesContext : DbContext
 {
     public EnergyBalancesContext()
     {
@@ -31,12 +31,13 @@ public class EnergyBalancesContext : DbContext
         modelBuilder.Entity<Area>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("areas_pkey");
+
             entity.ToTable("areas");
 
-            entity.Property(e => e.CityId).HasColumnName("city_id");
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.CityId).HasColumnName("city_id");
             entity.Property(e => e.PolygonCoordinates).HasColumnName("polygon_coordinates");
         });
 
@@ -69,11 +70,15 @@ public class EnergyBalancesContext : DbContext
 
             entity.ToTable("buildings_info");
 
+            entity.HasIndex(e => e.BuildingId, "IX_buildings_info_building_id");
+
             entity.Property(e => e.Id)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
+            entity.Property(e => e.Area).HasColumnName("area");
             entity.Property(e => e.BuildingId).HasColumnName("building_id");
             entity.Property(e => e.BuiltYear).HasColumnName("built_year");
+            entity.Property(e => e.ResidentsCount).HasColumnName("residents_count");
 
             entity.HasOne(d => d.Building).WithMany(p => p.BuildingsInfos)
                 .HasForeignKey(d => d.BuildingId)
@@ -101,5 +106,9 @@ public class EnergyBalancesContext : DbContext
                 .HasDefaultValueSql("'(0,0)'::point")
                 .HasColumnName("south_east_bound");
         });
+
+        OnModelCreatingPartial(modelBuilder);
     }
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
