@@ -15,7 +15,8 @@ export interface IGeoDataService {
     getHouses(cityId: number): Promise<Building[] | null>;
     getCities(): Promise<City[] | null>;
     getAreas(cityId: number): Promise<Area[] | null>;
-    getConnections(buildingId: number): Promise<BuildingPowerConnections | null>;
+    getBuildingInfo(buildingId: number): Promise<BuildingsInfo>;
+    calculateEnergyBalance(buildingId: number): Promise<BuildingPowerConnections | null>;
 }
 
 export class GeoDataService implements IGeoDataService {
@@ -202,8 +203,8 @@ export class GeoDataService implements IGeoDataService {
         return Promise.resolve<Area[] | null>(null as any);
     }
 
-    getConnections(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingPowerConnections | null> {
-        let url_ = this.baseUrl + "/api/geodata/GetConnections/{buildingId}";
+    getBuildingInfo(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingsInfo> {
+        let url_ = this.baseUrl + "/api/geodata/GetBuildingInfo/{buildingId}";
         if (buildingId === undefined || buildingId === null)
             throw new Error("The parameter 'buildingId' must be defined.");
         url_ = url_.replace("{buildingId}", encodeURIComponent("" + buildingId));
@@ -225,11 +226,62 @@ export class GeoDataService implements IGeoDataService {
                 throw _error;
             }
         }).then((_response: AxiosResponse) => {
-            return this.processGetConnections(_response);
+            return this.processGetBuildingInfo(_response);
         });
     }
 
-    protected processGetConnections(response: AxiosResponse): Promise<BuildingPowerConnections | null> {
+    protected processGetBuildingInfo(response: AxiosResponse): Promise<BuildingsInfo> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            result200 = BuildingsInfo.fromJS(resultData200);
+            return Promise.resolve<BuildingsInfo>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<BuildingsInfo>(null as any);
+    }
+
+    calculateEnergyBalance(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingPowerConnections | null> {
+        let url_ = this.baseUrl + "/api/geodata/CalculateEnergyBalance/{buildingId}";
+        if (buildingId === undefined || buildingId === null)
+            throw new Error("The parameter 'buildingId' must be defined.");
+        url_ = url_.replace("{buildingId}", encodeURIComponent("" + buildingId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "application/json"
+            },
+            cancelToken
+        };
+
+        return this.instance.request(options_).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processCalculateEnergyBalance(_response);
+        });
+    }
+
+    protected processCalculateEnergyBalance(response: AxiosResponse): Promise<BuildingPowerConnections | null> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {

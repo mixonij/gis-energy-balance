@@ -29,7 +29,7 @@ public class GeoDataController : ControllerBase
     {
         return _db.Cities.ToListAsync();
     }
-    
+
     [HttpGet("[action]/{cityId}")]
     public Task<List<Area>> GetAreas(int cityId)
     {
@@ -37,7 +37,13 @@ public class GeoDataController : ControllerBase
     }
 
     [HttpGet("[action]/{buildingId}")]
-    public async Task<BuildingPowerConnections> GetConnections(int buildingId)
+    public Task<BuildingsInfo?> GetBuildingInfo(int buildingId)
+    {
+        return _db.BuildingsInfos.FirstOrDefaultAsync(x => x.BuildingId == buildingId);
+    }
+
+    [HttpGet("[action]/{buildingId}")]
+    public async Task<BuildingPowerConnections> CalculateEnergyBalance(int buildingId)
     {
         var buildingInfo = await _db.BuildingsInfos.FirstAsync(x => x.BuildingId == buildingId);
         var building = new Building

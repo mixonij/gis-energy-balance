@@ -11,32 +11,32 @@ public class BuildingPowerConnections
     public BuildingPowerConnections(Building building) =>
         (_building) = (building);
 
-    public double GasCookingConsumption => GetGasCookingConsumption();
-    public double GasWaterHeatingConsumptionWithoutBoiler => GetGasWaterHeatingConsumptionWithoutBoiler();
-    public double GasHeatingConsumption => GetGasHeatingConsumption();
-    public double ElectricityCooking => GetElectricityCooking();
-    public double ElectricityWaterHeating => GetElectricityWaterHeating();
-    public double CentralHeating => GetCentralHeating();
-    public double CentralWater => GetCentralWater();
+    public double GasCookingConsumption => Math.Round(GetGasCookingConsumption(), 4);
+    public double GasWaterHeatingConsumptionWithoutBoiler => Math.Round(GetGasWaterHeatingConsumptionWithoutBoiler(), 4);
+    public double GasHeatingConsumption => Math.Round(GetGasHeatingConsumption(), 4);
+    public double ElectricityCooking => Math.Round(GetElectricityCooking(), 4);
+    public double ElectricityWaterHeating => Math.Round(GetElectricityWaterHeating(), 4);
+    public double CentralHeating => Math.Round(GetCentralHeating(), 4);
+    public double CentralWater => Math.Round(GetCentralWater(), 4);
     
-    public double GasCookingConsumptionFuel => GetGasCookingConsumption() * 1.154 / 1000;
-    public double GasWaterHeatingConsumptionWithoutBoilerFuel => GetGasWaterHeatingConsumptionWithoutBoiler() * 1.154 / 1000;
-    public double GasHeatingConsumptionFuel => GetGasHeatingConsumption() * 1.154 / 1000;
-    public double ElectricityCookingFuel => GetElectricityCooking() * 0.123 / 1000;
-    public double ElectricityWaterHeatingFuel => GetElectricityWaterHeating() * 0.123 / 1000;
-    public double CentralHeatingFuel => GetCentralHeating() * 1.154 / 1000;
-    public double CentralWaterFuel => GetCentralWater() * 1.154 / 1000;
+    public double GasCookingConsumptionFuel => Math.Round(GetGasCookingConsumption() * 1.154 / 1000, 4);
+    public double GasWaterHeatingConsumptionWithoutBoilerFuel => Math.Round(GetGasWaterHeatingConsumptionWithoutBoiler() * 1.154 / 1000, 4);
+    public double GasHeatingConsumptionFuel => Math.Round(GetGasHeatingConsumption() * 1.154 / 1000, 4);
+    public double ElectricityCookingFuel => Math.Round(GetElectricityCooking() * 0.123 / 1000, 4);
+    public double ElectricityWaterHeatingFuel => Math.Round(GetElectricityWaterHeating() * 0.123 / 1000, 4);
+    public double CentralHeatingFuel => Math.Round(GetCentralHeating() * 1.154 / 1000, 4);
+    public double CentralWaterFuel => Math.Round(GetCentralWater() * 1.154 / 1000, 4);
 
 
-    public double S1 => GasCookingConsumptionFuel + CentralHeatingFuel + CentralWaterFuel;
-    public double S2 => GasWaterHeatingConsumptionWithoutBoilerFuel + ElectricityCookingFuel + CentralWaterFuel + CentralHeatingFuel;
-    public double S3 => GasCookingConsumptionFuel + CentralHeatingFuel + GasWaterHeatingConsumptionWithoutBoilerFuel;
-    public double S4 => GasCookingConsumptionFuel + GasWaterHeatingConsumptionWithoutBoilerFuel + GasHeatingConsumptionFuel;
-    public double S5 => GasWaterHeatingConsumptionWithoutBoilerFuel + GasHeatingConsumptionFuel + ElectricityCookingFuel;
-    public double S6 => GasWaterHeatingConsumptionWithoutBoilerFuel + ElectricityCookingFuel + CentralHeatingFuel;
-    public double S7 => ElectricityCookingFuel + ElectricityWaterHeatingFuel + CentralHeatingFuel;
-    public double S8 => GasHeatingConsumptionFuel + ElectricityCookingFuel + ElectricityWaterHeatingFuel;
-    public double S9 => GasCookingConsumptionFuel + GasHeatingConsumptionFuel + ElectricityWaterHeatingFuel;
+    public double S1 => Math.Round(GasCookingConsumptionFuel + CentralHeatingFuel + CentralWaterFuel, 4);
+    public double S2 => Math.Round(GasWaterHeatingConsumptionWithoutBoilerFuel + ElectricityCookingFuel + CentralWaterFuel + CentralHeatingFuel, 4);
+    public double S3 => Math.Round(GasCookingConsumptionFuel + CentralHeatingFuel + GasWaterHeatingConsumptionWithoutBoilerFuel, 4);
+    public double S4 => Math.Round(GasCookingConsumptionFuel + GasWaterHeatingConsumptionWithoutBoilerFuel + GasHeatingConsumptionFuel, 4);
+    public double S5 => Math.Round(GasWaterHeatingConsumptionWithoutBoilerFuel + GasHeatingConsumptionFuel + ElectricityCookingFuel, 4);
+    public double S6 => Math.Round(GasWaterHeatingConsumptionWithoutBoilerFuel + ElectricityCookingFuel + CentralHeatingFuel, 4);
+    public double S7 => Math.Round(ElectricityCookingFuel + ElectricityWaterHeatingFuel + CentralHeatingFuel, 4);
+    public double S8 => Math.Round(GasHeatingConsumptionFuel + ElectricityCookingFuel + ElectricityWaterHeatingFuel, 4);
+    public double S9 => Math.Round(GasCookingConsumptionFuel + GasHeatingConsumptionFuel + ElectricityWaterHeatingFuel, 4);
 
     
 
@@ -67,7 +67,7 @@ public class BuildingPowerConnections
     private double GetGasHeatingConsumption()
     {
         return ((3.32 / (21 - _standard.ColdTemperature) +
-                 (0.097 * 0.8 * (0.28 * 1 * 0.35 * 0.8 * _building.V * 353) / _building.AOk)) *
+                 0.097 * 0.8 * (0.28 * 1 * 0.35 * 0.8 * _building.V * 353) / (100*_building.AOk)) *
                 (_standard.DDay * _building.AOk) -
                 (0.864 * _standard.ZHeating * _building.AOk - 0.223 * _standard.IMean * _building.AF)) /
                (_standard.GasCombustionHeat * 12 * 0.8);
