@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Gis.EnergyBalances.Dom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Gis.EnergyBalances.Application", "Ispu.Gis.EnergyBalances.Application\Ispu.Gis.EnergyBalances.Application.csproj", "{24E6A795-0368-474E-AD93-6866D238EE97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ispu.Utils.EnergyBalances.TestingTheories", "Ispu.Utils.EnergyBalances.TestingTheories\Ispu.Utils.EnergyBalances.TestingTheories.csproj", "{D8F9B45C-6DA8-43FF-8436-61FF29783B0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,12 +49,17 @@ Global
 		{24E6A795-0368-474E-AD93-6866D238EE97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24E6A795-0368-474E-AD93-6866D238EE97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24E6A795-0368-474E-AD93-6866D238EE97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8F9B45C-6DA8-43FF-8436-61FF29783B0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8F9B45C-6DA8-43FF-8436-61FF29783B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8F9B45C-6DA8-43FF-8436-61FF29783B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F9B45C-6DA8-43FF-8436-61FF29783B0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5598154E-5C20-46CF-9F79-32CDA8A7C8A4} = {77A3B7D8-FA8B-408E-BBFD-4D47ABAA8881}
+		{D8F9B45C-6DA8-43FF-8436-61FF29783B0C} = {77A3B7D8-FA8B-408E-BBFD-4D47ABAA8881}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E2A0499C-9E3A-4C29-B6DD-D82DACCACA2B}

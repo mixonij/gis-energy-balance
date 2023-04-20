@@ -1,4 +1,6 @@
-﻿using Ispu.Gis.EnergyBalances.Domain.Entities;
+﻿using Ispu.Gis.EnergyBalances.Application.Models;
+using Ispu.Gis.EnergyBalances.Application.Storages;
+using Ispu.Gis.EnergyBalances.Domain.Entities;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +14,12 @@ namespace Ispu.Gis.EnergyBalances.Controlles;
 public class GeoDataController : ControllerBase
 {
     private readonly EnergyBalancesContext _db;
+    private readonly IPipesStorage _pipesStorage;
 
-    public GeoDataController(EnergyBalancesContext db)
+    public GeoDataController(EnergyBalancesContext db, IPipesStorage pipesStorage)
     {
         _db = db;
+        _pipesStorage = pipesStorage;
     }
 
     [HttpGet("[action]/{cityId}")]
@@ -55,5 +59,24 @@ public class GeoDataController : ControllerBase
         var pC = new BuildingPowerConnections(building);
 
         return pC;
+    }
+
+    [HttpGet("[action]")]
+    public async Task<List<Pipe>> GetPipeGroups()
+    {
+        return (await _pipesStorage.GetPipes()).Select(x => new Pipe
+        {
+            Id = x.OgcFid,
+            DOut = x.Dobr,
+            DIn = x.Dpod,
+            Length = x.ShapeLeng,
+            Points = x.WkbGeometry!.Coordinates.Select(t=> new GeographyPoint(t)).ToList()
+        }).ToList();
+    }
+    
+    [HttpGet("[action]")]
+    public Task<List<HeatingStation>> GetHeatingStations()
+    {
+        return _db.HeatingStations.ToListAsync();
     }
 }

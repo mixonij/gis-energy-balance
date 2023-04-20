@@ -1,3 +1,4 @@
+using Ispu.Gis.EnergyBalances.Application.Storages;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<EnergyBalancesContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<EnergyBalancesContext>(options =>
+    options.UseNpgsql(connectionString, o => o.UseNetTopologySuite()));
 
 builder.Services.AddSwaggerDocument(settings =>
 {
@@ -19,6 +21,8 @@ builder.Services.AddSwaggerDocument(settings =>
         document.Info.Description = "REST API Energy Balances.";
     };
 });
+
+builder.Services.AddSingleton<IPipesStorage, PipesStorage>();
 
 var app = builder.Build();
 
@@ -43,4 +47,14 @@ app.MapControllerRoute(
 
 app.MapFallbackToFile("index.html");
 
+app.Lifetime.ApplicationStarted.Register(OnAppStarted);
+
 app.Run();
+
+
+async void OnAppStarted()
+{
+    var pipesService = app.Services.GetRequiredService<IPipesStorage>();
+
+    //await pipesService.Initialize();
+}

@@ -2,8 +2,8 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {
     LayerGroup,
     LayersControl,
-    MapContainer,
-    Polygon,
+    MapContainer, Marker,
+    Polygon, Polyline,
     TileLayer
 } from 'react-leaflet';
 import {useGeolocated} from "react-geolocated";
@@ -15,7 +15,7 @@ import {
     City,
     BuildingPowerConnections,
     GeoDataService,
-    IGeoDataService
+    IGeoDataService, Pipe, HeatingStation
 } from "../../app/@shared/g";
 import {TabPanel, TabView} from "primereact/tabview";
 import MapController from "../map/MapController";
@@ -35,6 +35,8 @@ const Dashboard = (props: any) => {
     const [buildings, setBuildings] = useState<Array<Building>>([]);
     const [areas, setAreas] = useState<Array<Area>>([]);
     const [cities, setCities] = useState<Array<City>>([]);
+    const [pipes, setPipes] = useState<Array<Pipe>>([]);
+    const [heatingStations, setHeatingStations] = useState<Array<HeatingStation>>([]);
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
     const [selectedEnergyBalance, setSelectedEnergyBalance] = useState<BuildingPowerConnections | null>(null);
@@ -51,6 +53,12 @@ const Dashboard = (props: any) => {
 
         const area = await geoService.getAreas(selectedCity?.id!)
         setAreas(area ?? []);
+
+        const pipes = await geoService.getPipeGroups();
+        setPipes(pipes ?? []);
+
+        const heatingStations = await geoService.getHeatingStations();
+        setHeatingStations(heatingStations ?? []);
     }, [geoService, coords, selectedCity]);
 
     const loadBuildingInfo = useCallback(async () => {
@@ -87,8 +95,9 @@ const Dashboard = (props: any) => {
     }, [selectedBuilding])
 
     const fillBlueOptions = {fillColor: 'blue'}
-    const fillOrangeOptions = {fillColor: 'orange', color: 'red'}
+    const fillOrangeOptions = {color: 'red'}
     const purpleOptions = {fillColor: 'red'}
+    const limeOptions = {color: 'lime'}
 
 
     return (
@@ -112,16 +121,18 @@ const Dashboard = (props: any) => {
                             <LayersControl.Overlay checked name="Здания">
                                 <LayerGroup>
                                     {buildings.map(building =>
-                                        <div style={{zIndex: 1002}}>
-                                            <Polygon
-                                                pathOptions={selectedBuilding?.id == building.id ? purpleOptions : fillBlueOptions}
-                                                key={building.id}
-                                                positions={building.polygonCoordinates.map(x => [x.x, x.y])}
-                                                eventHandlers={{
-                                                    click: () => {
-                                                        setSelectedBuilding(building);
-                                                    }
-                                                }}/></div>)
+
+                                        <Polygon
+                                            pathOptions={selectedBuilding?.id == building.id ? purpleOptions : fillBlueOptions}
+                                            key={building.id}
+                                            positions={building.polygonCoordinates.map(x => [x.x, x.y])}
+                                            eventHandlers={{
+                                                click: () => {
+                                                    setSelectedBuilding(building);
+                                                }
+                                            }}>
+                                            ffg
+                                        </Polygon>)
                                     }
                                 </LayerGroup>
                             </LayersControl.Overlay>
@@ -137,11 +148,35 @@ const Dashboard = (props: any) => {
                                     }
                                 </LayerGroup>
                             </LayersControl.Overlay>
+                            <LayersControl.Overlay checked name="Теплотрассы">
+                                <LayerGroup>
+                                    {pipes.map(pipe =>
+                                        <div style={{zIndex: 1001}}>
+                                            <Polyline pathOptions={limeOptions}
+                                                      positions={pipe.points.map(x => [x.y, x.x])}/>
+
+                                        </div>
+                                    )
+                                    }
+                                </LayerGroup>
+                            </LayersControl.Overlay>
+
+                            <LayersControl.Overlay checked name="Теплоподстанции">
+                                <LayerGroup>
+                                    {heatingStations.map(heatingStation =>
+                                        <div style={{zIndex: 1001}}>
+                                            <Marker position={[heatingStation.coords.x, heatingStation.coords.y]}/>
+
+                                        </div>
+                                    )
+                                    }
+                                </LayerGroup>
+                            </LayersControl.Overlay>
                         </LayersControl>
                         <MapController city={selectedCity} setCurrentZoom={setCurrentZoom}/>
                     </MapContainer>) : <div></div>}
             </div>
-            <div className="card" style={{height: "40vh"}}>
+            <div className="card" style={{height: "50vh"}}>
                 <TabView>
                     <TabPanel header="Настройки">
                         <h5>Город</h5>

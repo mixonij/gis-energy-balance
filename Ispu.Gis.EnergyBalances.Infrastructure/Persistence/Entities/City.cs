@@ -15,4 +15,6 @@ public partial class City
     public int MinZoom { get; set; }
 
     public virtual ICollection<Building> Buildings { get; } = new List<Building>();
+
+    public virtual ICollection<HeatingStation> HeatingStations { get; } = new List<HeatingStation>();
 }

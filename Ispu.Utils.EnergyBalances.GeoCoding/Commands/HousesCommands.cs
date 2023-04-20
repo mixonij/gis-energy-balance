@@ -1,12 +1,8 @@
 using System.Globalization;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.Json;
-using System.Web;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
-using Ispu.Utils.EnergyBalances.GeoCoding.Models;
 using Ispu.Utils.EnergyBalances.GeoCoding.Options;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
@@ -14,6 +10,7 @@ using OsmSharp;
 using OsmSharp.Complete;
 using OsmSharp.Streams;
 using Serilog;
+using House = Ispu.Utils.EnergyBalances.GeoCoding.Models.House;
 
 namespace Ispu.Utils.EnergyBalances.GeoCoding.Commands;
 
@@ -43,7 +40,7 @@ public class HousesCommands
         
 
         var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
-            "Server=localhost;Port=5432;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
+            "Server=localhost;Port=5433;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
         await using var dbContext = new EnergyBalancesContext(options);
         await dbContext.Database.MigrateAsync();
 
