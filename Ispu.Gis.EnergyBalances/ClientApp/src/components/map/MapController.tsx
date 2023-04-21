@@ -24,8 +24,8 @@ const MapController = ({setCurrentZoom, city}: MapControllerProps) => {
         }
 
         map.setMinZoom(city.minZoom);
-        map.fitBounds([[city?.northWestBound.x!, city?.northWestBound.y!], [city?.southEastBound.x!, city?.southEastBound.y!]]);
-        map.setMaxBounds([[city?.northWestBound.x!, city?.northWestBound.y!], [city?.southEastBound.x!, city?.southEastBound.y!]]);
+        map.fitBounds([[city?.northWestPoint.x!, city?.northWestPoint.y!], [city?.southEastPoint.x!, city?.southEastPoint.y!]]);
+        map.setMaxBounds([[city?.northWestPoint.x!, city?.northWestPoint.y!], [city?.southEastPoint.x!, city?.southEastPoint.y!]]);
     }, [city])
 
     return <></>;

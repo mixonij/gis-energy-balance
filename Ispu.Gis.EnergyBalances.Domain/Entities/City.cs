@@ -1,11 +1,9 @@
-﻿using NpgsqlTypes;
-
-namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 
 /// <summary>
-/// Модель города
+/// Город
 /// </summary>
-public class City
+public class City: IEntity
 {
     /// <summary>
     /// Идентификатор города
@@ -25,12 +23,12 @@ public class City
     /// <summary>
     /// Северо-западная точка границы области отображения
     /// </summary>
-    public NpgsqlPoint NorthWestPoint { get; set; }
+    public Point NorthWestPoint { get; set; }
 
     /// <summary>
     /// Юго-восточная точка границы области отображения
     /// </summary>
-    public NpgsqlPoint SouthEastPoint { get; set; }
+    public Point SouthEastPoint { get; set; }
 
     /// <summary>
     /// Минимальный зум области отображения
@@ -41,14 +39,4 @@ public class City
     /// Районы города
     /// </summary>
     public List<CityDistrict> CityDistricts { get; set; } = new();
-
-    /// <summary>
-    /// Здания города
-    /// </summary>
-    public List<Building> Buildings { get; set; } = new();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public ICollection<HeatingStation> HeatingStations { get; set; } = new List<HeatingStation>();
 }

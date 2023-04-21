@@ -12,13 +12,9 @@ import axios, { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 
 export interface IGeoDataService {
-    getHouses(cityId: number): Promise<Building[] | null>;
     getCities(): Promise<City[] | null>;
-    getAreas(cityId: number): Promise<Area[] | null>;
-    getBuildingInfo(buildingId: number): Promise<BuildingsInfo>;
-    calculateEnergyBalance(buildingId: number): Promise<BuildingPowerConnections | null>;
+    getAreas(cityId: number): Promise<CityDistrict[] | null>;
     getPipeGroups(): Promise<Pipe[] | null>;
-    getHeatingStations(): Promise<HeatingStation[] | null>;
 }
 
 export class GeoDataService implements IGeoDataService {
@@ -32,64 +28,6 @@ export class GeoDataService implements IGeoDataService {
 
         this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
 
-    }
-
-    getHouses(cityId: number , cancelToken?: CancelToken | undefined): Promise<Building[] | null> {
-        let url_ = this.baseUrl + "/api/geodata/GetHouses/{cityId}";
-        if (cityId === undefined || cityId === null)
-            throw new Error("The parameter 'cityId' must be defined.");
-        url_ = url_.replace("{cityId}", encodeURIComponent("" + cityId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: AxiosRequestConfig = {
-            method: "GET",
-            url: url_,
-            headers: {
-                "Accept": "application/json"
-            },
-            cancelToken
-        };
-
-        return this.instance.request(options_).catch((_error: any) => {
-            if (isAxiosError(_error) && _error.response) {
-                return _error.response;
-            } else {
-                throw _error;
-            }
-        }).then((_response: AxiosResponse) => {
-            return this.processGetHouses(_response);
-        });
-    }
-
-    protected processGetHouses(response: AxiosResponse): Promise<Building[] | null> {
-        const status = response.status;
-        let _headers: any = {};
-        if (response.headers && typeof response.headers === "object") {
-            for (let k in response.headers) {
-                if (response.headers.hasOwnProperty(k)) {
-                    _headers[k] = response.headers[k];
-                }
-            }
-        }
-        if (status === 200) {
-            const _responseText = response.data;
-            let result200: any = null;
-            let resultData200  = _responseText;
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(Building.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
-            return Promise.resolve<Building[] | null>(result200);
-
-        } else if (status !== 200 && status !== 204) {
-            const _responseText = response.data;
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-        }
-        return Promise.resolve<Building[] | null>(null as any);
     }
 
     getCities(  cancelToken?: CancelToken | undefined): Promise<City[] | null> {
@@ -147,7 +85,7 @@ export class GeoDataService implements IGeoDataService {
         return Promise.resolve<City[] | null>(null as any);
     }
 
-    getAreas(cityId: number , cancelToken?: CancelToken | undefined): Promise<Area[] | null> {
+    getAreas(cityId: number , cancelToken?: CancelToken | undefined): Promise<CityDistrict[] | null> {
         let url_ = this.baseUrl + "/api/geodata/GetAreas/{cityId}";
         if (cityId === undefined || cityId === null)
             throw new Error("The parameter 'cityId' must be defined.");
@@ -174,7 +112,7 @@ export class GeoDataService implements IGeoDataService {
         });
     }
 
-    protected processGetAreas(response: AxiosResponse): Promise<Area[] | null> {
+    protected processGetAreas(response: AxiosResponse): Promise<CityDistrict[] | null> {
         const status = response.status;
         let _headers: any = {};
         if (response.headers && typeof response.headers === "object") {
@@ -191,120 +129,18 @@ export class GeoDataService implements IGeoDataService {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(Area.fromJS(item));
+                    result200!.push(CityDistrict.fromJS(item));
             }
             else {
                 result200 = <any>null;
             }
-            return Promise.resolve<Area[] | null>(result200);
+            return Promise.resolve<CityDistrict[] | null>(result200);
 
         } else if (status !== 200 && status !== 204) {
             const _responseText = response.data;
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
-        return Promise.resolve<Area[] | null>(null as any);
-    }
-
-    getBuildingInfo(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingsInfo> {
-        let url_ = this.baseUrl + "/api/geodata/GetBuildingInfo/{buildingId}";
-        if (buildingId === undefined || buildingId === null)
-            throw new Error("The parameter 'buildingId' must be defined.");
-        url_ = url_.replace("{buildingId}", encodeURIComponent("" + buildingId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: AxiosRequestConfig = {
-            method: "GET",
-            url: url_,
-            headers: {
-                "Accept": "application/json"
-            },
-            cancelToken
-        };
-
-        return this.instance.request(options_).catch((_error: any) => {
-            if (isAxiosError(_error) && _error.response) {
-                return _error.response;
-            } else {
-                throw _error;
-            }
-        }).then((_response: AxiosResponse) => {
-            return this.processGetBuildingInfo(_response);
-        });
-    }
-
-    protected processGetBuildingInfo(response: AxiosResponse): Promise<BuildingsInfo> {
-        const status = response.status;
-        let _headers: any = {};
-        if (response.headers && typeof response.headers === "object") {
-            for (let k in response.headers) {
-                if (response.headers.hasOwnProperty(k)) {
-                    _headers[k] = response.headers[k];
-                }
-            }
-        }
-        if (status === 200) {
-            const _responseText = response.data;
-            let result200: any = null;
-            let resultData200  = _responseText;
-            result200 = BuildingsInfo.fromJS(resultData200);
-            return Promise.resolve<BuildingsInfo>(result200);
-
-        } else if (status !== 200 && status !== 204) {
-            const _responseText = response.data;
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-        }
-        return Promise.resolve<BuildingsInfo>(null as any);
-    }
-
-    calculateEnergyBalance(buildingId: number , cancelToken?: CancelToken | undefined): Promise<BuildingPowerConnections | null> {
-        let url_ = this.baseUrl + "/api/geodata/CalculateEnergyBalance/{buildingId}";
-        if (buildingId === undefined || buildingId === null)
-            throw new Error("The parameter 'buildingId' must be defined.");
-        url_ = url_.replace("{buildingId}", encodeURIComponent("" + buildingId));
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: AxiosRequestConfig = {
-            method: "GET",
-            url: url_,
-            headers: {
-                "Accept": "application/json"
-            },
-            cancelToken
-        };
-
-        return this.instance.request(options_).catch((_error: any) => {
-            if (isAxiosError(_error) && _error.response) {
-                return _error.response;
-            } else {
-                throw _error;
-            }
-        }).then((_response: AxiosResponse) => {
-            return this.processCalculateEnergyBalance(_response);
-        });
-    }
-
-    protected processCalculateEnergyBalance(response: AxiosResponse): Promise<BuildingPowerConnections | null> {
-        const status = response.status;
-        let _headers: any = {};
-        if (response.headers && typeof response.headers === "object") {
-            for (let k in response.headers) {
-                if (response.headers.hasOwnProperty(k)) {
-                    _headers[k] = response.headers[k];
-                }
-            }
-        }
-        if (status === 200) {
-            const _responseText = response.data;
-            let result200: any = null;
-            let resultData200  = _responseText;
-            result200 = resultData200 ? BuildingPowerConnections.fromJS(resultData200) : <any>null;
-            return Promise.resolve<BuildingPowerConnections | null>(result200);
-
-        } else if (status !== 200 && status !== 204) {
-            const _responseText = response.data;
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-        }
-        return Promise.resolve<BuildingPowerConnections | null>(null as any);
+        return Promise.resolve<CityDistrict[] | null>(null as any);
     }
 
     getPipeGroups(  cancelToken?: CancelToken | undefined): Promise<Pipe[] | null> {
@@ -361,72 +197,18 @@ export class GeoDataService implements IGeoDataService {
         }
         return Promise.resolve<Pipe[] | null>(null as any);
     }
-
-    getHeatingStations(  cancelToken?: CancelToken | undefined): Promise<HeatingStation[] | null> {
-        let url_ = this.baseUrl + "/api/geodata/GetHeatingStations";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_: AxiosRequestConfig = {
-            method: "GET",
-            url: url_,
-            headers: {
-                "Accept": "application/json"
-            },
-            cancelToken
-        };
-
-        return this.instance.request(options_).catch((_error: any) => {
-            if (isAxiosError(_error) && _error.response) {
-                return _error.response;
-            } else {
-                throw _error;
-            }
-        }).then((_response: AxiosResponse) => {
-            return this.processGetHeatingStations(_response);
-        });
-    }
-
-    protected processGetHeatingStations(response: AxiosResponse): Promise<HeatingStation[] | null> {
-        const status = response.status;
-        let _headers: any = {};
-        if (response.headers && typeof response.headers === "object") {
-            for (let k in response.headers) {
-                if (response.headers.hasOwnProperty(k)) {
-                    _headers[k] = response.headers[k];
-                }
-            }
-        }
-        if (status === 200) {
-            const _responseText = response.data;
-            let result200: any = null;
-            let resultData200  = _responseText;
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(HeatingStation.fromJS(item));
-            }
-            else {
-                result200 = <any>null;
-            }
-            return Promise.resolve<HeatingStation[] | null>(result200);
-
-        } else if (status !== 200 && status !== 204) {
-            const _responseText = response.data;
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-        }
-        return Promise.resolve<HeatingStation[] | null>(null as any);
-    }
 }
 
-export class Building implements IBuilding {
+export class City implements ICity {
     id!: number;
-    cityId!: number;
-    coordinates!: NpgsqlPoint;
-    polygonCoordinates!: NpgsqlPoint[];
-    buildingsInfos!: BuildingsInfo[];
-    city!: City;
+    name!: string;
+    nativeName!: string;
+    northWestPoint!: Point;
+    southEastPoint!: Point;
+    minZoom!: number;
+    cityDistricts!: CityDistrict[];
 
-    constructor(data?: IBuilding) {
+    constructor(data?: ICity) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -434,35 +216,31 @@ export class Building implements IBuilding {
             }
         }
         if (!data) {
-            this.coordinates = new NpgsqlPoint();
-            this.polygonCoordinates = [];
-            this.buildingsInfos = [];
-            this.city = new City();
+            this.northWestPoint = new Point();
+            this.southEastPoint = new Point();
+            this.cityDistricts = [];
         }
     }
 
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
-            this.cityId = _data["cityId"];
-            this.coordinates = _data["coordinates"] ? NpgsqlPoint.fromJS(_data["coordinates"]) : new NpgsqlPoint();
-            if (Array.isArray(_data["polygonCoordinates"])) {
-                this.polygonCoordinates = [] as any;
-                for (let item of _data["polygonCoordinates"])
-                    this.polygonCoordinates!.push(NpgsqlPoint.fromJS(item));
+            this.name = _data["name"];
+            this.nativeName = _data["nativeName"];
+            this.northWestPoint = _data["northWestPoint"] ? Point.fromJS(_data["northWestPoint"]) : new Point();
+            this.southEastPoint = _data["southEastPoint"] ? Point.fromJS(_data["southEastPoint"]) : new Point();
+            this.minZoom = _data["minZoom"];
+            if (Array.isArray(_data["cityDistricts"])) {
+                this.cityDistricts = [] as any;
+                for (let item of _data["cityDistricts"])
+                    this.cityDistricts!.push(CityDistrict.fromJS(item));
             }
-            if (Array.isArray(_data["buildingsInfos"])) {
-                this.buildingsInfos = [] as any;
-                for (let item of _data["buildingsInfos"])
-                    this.buildingsInfos!.push(BuildingsInfo.fromJS(item));
-            }
-            this.city = _data["city"] ? City.fromJS(_data["city"]) : new City();
         }
     }
 
-    static fromJS(data: any): Building {
+    static fromJS(data: any): City {
         data = typeof data === 'object' ? data : {};
-        let result = new Building();
+        let result = new City();
         result.init(data);
         return result;
     }
@@ -470,38 +248,35 @@ export class Building implements IBuilding {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
-        data["cityId"] = this.cityId;
-        data["coordinates"] = this.coordinates ? this.coordinates.toJSON() : <any>undefined;
-        if (Array.isArray(this.polygonCoordinates)) {
-            data["polygonCoordinates"] = [];
-            for (let item of this.polygonCoordinates)
-                data["polygonCoordinates"].push(item.toJSON());
+        data["name"] = this.name;
+        data["nativeName"] = this.nativeName;
+        data["northWestPoint"] = this.northWestPoint ? this.northWestPoint.toJSON() : <any>undefined;
+        data["southEastPoint"] = this.southEastPoint ? this.southEastPoint.toJSON() : <any>undefined;
+        data["minZoom"] = this.minZoom;
+        if (Array.isArray(this.cityDistricts)) {
+            data["cityDistricts"] = [];
+            for (let item of this.cityDistricts)
+                data["cityDistricts"].push(item.toJSON());
         }
-        if (Array.isArray(this.buildingsInfos)) {
-            data["buildingsInfos"] = [];
-            for (let item of this.buildingsInfos)
-                data["buildingsInfos"].push(item.toJSON());
-        }
-        data["city"] = this.city ? this.city.toJSON() : <any>undefined;
         return data;
     }
 }
 
-export interface IBuilding {
+export interface ICity {
     id: number;
-    cityId: number;
-    coordinates: NpgsqlPoint;
-    polygonCoordinates: NpgsqlPoint[];
-    buildingsInfos: BuildingsInfo[];
-    city: City;
+    name: string;
+    nativeName: string;
+    northWestPoint: Point;
+    southEastPoint: Point;
+    minZoom: number;
+    cityDistricts: CityDistrict[];
 }
 
-/** Represents a PostgreSQL point type. */
-export class NpgsqlPoint implements INpgsqlPoint {
+export class Point implements IPoint {
     x!: number;
     y!: number;
 
-    constructor(data?: INpgsqlPoint) {
+    constructor(data?: IPoint) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -517,9 +292,9 @@ export class NpgsqlPoint implements INpgsqlPoint {
         }
     }
 
-    static fromJS(data: any): NpgsqlPoint {
+    static fromJS(data: any): Point {
         data = typeof data === 'object' ? data : {};
-        let result = new NpgsqlPoint();
+        let result = new Point();
         result.init(data);
         return result;
     }
@@ -532,161 +307,17 @@ export class NpgsqlPoint implements INpgsqlPoint {
     }
 }
 
-/** Represents a PostgreSQL point type. */
-export interface INpgsqlPoint {
+export interface IPoint {
     x: number;
     y: number;
 }
 
-export class BuildingsInfo implements IBuildingsInfo {
-    id!: number;
-    buildingId!: number;
-    builtYear?: number | undefined;
-    residentsCount!: number;
-    area!: number;
-    building!: Building;
-
-    constructor(data?: IBuildingsInfo) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.building = new Building();
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.buildingId = _data["buildingId"];
-            this.builtYear = _data["builtYear"];
-            this.residentsCount = _data["residentsCount"];
-            this.area = _data["area"];
-            this.building = _data["building"] ? Building.fromJS(_data["building"]) : new Building();
-        }
-    }
-
-    static fromJS(data: any): BuildingsInfo {
-        data = typeof data === 'object' ? data : {};
-        let result = new BuildingsInfo();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["buildingId"] = this.buildingId;
-        data["builtYear"] = this.builtYear;
-        data["residentsCount"] = this.residentsCount;
-        data["area"] = this.area;
-        data["building"] = this.building ? this.building.toJSON() : <any>undefined;
-        return data;
-    }
-}
-
-export interface IBuildingsInfo {
-    id: number;
-    buildingId: number;
-    builtYear?: number | undefined;
-    residentsCount: number;
-    area: number;
-    building: Building;
-}
-
-export class City implements ICity {
-    id!: number;
-    nameRussian!: string;
-    northWestBound!: NpgsqlPoint;
-    southEastBound!: NpgsqlPoint;
-    minZoom!: number;
-    buildings!: Building[];
-    heatingStations!: HeatingStation[];
-
-    constructor(data?: ICity) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.northWestBound = new NpgsqlPoint();
-            this.southEastBound = new NpgsqlPoint();
-            this.buildings = [];
-            this.heatingStations = [];
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.nameRussian = _data["nameRussian"];
-            this.northWestBound = _data["northWestBound"] ? NpgsqlPoint.fromJS(_data["northWestBound"]) : new NpgsqlPoint();
-            this.southEastBound = _data["southEastBound"] ? NpgsqlPoint.fromJS(_data["southEastBound"]) : new NpgsqlPoint();
-            this.minZoom = _data["minZoom"];
-            if (Array.isArray(_data["buildings"])) {
-                this.buildings = [] as any;
-                for (let item of _data["buildings"])
-                    this.buildings!.push(Building.fromJS(item));
-            }
-            if (Array.isArray(_data["heatingStations"])) {
-                this.heatingStations = [] as any;
-                for (let item of _data["heatingStations"])
-                    this.heatingStations!.push(HeatingStation.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): City {
-        data = typeof data === 'object' ? data : {};
-        let result = new City();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["nameRussian"] = this.nameRussian;
-        data["northWestBound"] = this.northWestBound ? this.northWestBound.toJSON() : <any>undefined;
-        data["southEastBound"] = this.southEastBound ? this.southEastBound.toJSON() : <any>undefined;
-        data["minZoom"] = this.minZoom;
-        if (Array.isArray(this.buildings)) {
-            data["buildings"] = [];
-            for (let item of this.buildings)
-                data["buildings"].push(item.toJSON());
-        }
-        if (Array.isArray(this.heatingStations)) {
-            data["heatingStations"] = [];
-            for (let item of this.heatingStations)
-                data["heatingStations"].push(item.toJSON());
-        }
-        return data;
-    }
-}
-
-export interface ICity {
-    id: number;
-    nameRussian: string;
-    northWestBound: NpgsqlPoint;
-    southEastBound: NpgsqlPoint;
-    minZoom: number;
-    buildings: Building[];
-    heatingStations: HeatingStation[];
-}
-
-export class HeatingStation implements IHeatingStation {
+export class CityDistrict implements ICityDistrict {
     id!: number;
     cityId!: number;
-    nominalPower!: number;
-    coords!: NpgsqlPoint;
-    city!: City;
+    geometryPoints!: Point[];
 
-    constructor(data?: IHeatingStation) {
+    constructor(data?: ICityDistrict) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -694,8 +325,7 @@ export class HeatingStation implements IHeatingStation {
             }
         }
         if (!data) {
-            this.coords = new NpgsqlPoint();
-            this.city = new City();
+            this.geometryPoints = [];
         }
     }
 
@@ -703,15 +333,17 @@ export class HeatingStation implements IHeatingStation {
         if (_data) {
             this.id = _data["id"];
             this.cityId = _data["cityId"];
-            this.nominalPower = _data["nominalPower"];
-            this.coords = _data["coords"] ? NpgsqlPoint.fromJS(_data["coords"]) : new NpgsqlPoint();
-            this.city = _data["city"] ? City.fromJS(_data["city"]) : new City();
+            if (Array.isArray(_data["geometryPoints"])) {
+                this.geometryPoints = [] as any;
+                for (let item of _data["geometryPoints"])
+                    this.geometryPoints!.push(Point.fromJS(item));
+            }
         }
     }
 
-    static fromJS(data: any): HeatingStation {
+    static fromJS(data: any): CityDistrict {
         data = typeof data === 'object' ? data : {};
-        let result = new HeatingStation();
+        let result = new CityDistrict();
         result.init(data);
         return result;
     }
@@ -720,198 +352,19 @@ export class HeatingStation implements IHeatingStation {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
         data["cityId"] = this.cityId;
-        data["nominalPower"] = this.nominalPower;
-        data["coords"] = this.coords ? this.coords.toJSON() : <any>undefined;
-        data["city"] = this.city ? this.city.toJSON() : <any>undefined;
+        if (Array.isArray(this.geometryPoints)) {
+            data["geometryPoints"] = [];
+            for (let item of this.geometryPoints)
+                data["geometryPoints"].push(item.toJSON());
+        }
         return data;
     }
 }
 
-export interface IHeatingStation {
+export interface ICityDistrict {
     id: number;
     cityId: number;
-    nominalPower: number;
-    coords: NpgsqlPoint;
-    city: City;
-}
-
-export class Area implements IArea {
-    id!: number;
-    cityId!: number;
-    polygonCoordinates!: NpgsqlPoint[];
-
-    constructor(data?: IArea) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-        if (!data) {
-            this.polygonCoordinates = [];
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.id = _data["id"];
-            this.cityId = _data["cityId"];
-            if (Array.isArray(_data["polygonCoordinates"])) {
-                this.polygonCoordinates = [] as any;
-                for (let item of _data["polygonCoordinates"])
-                    this.polygonCoordinates!.push(NpgsqlPoint.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): Area {
-        data = typeof data === 'object' ? data : {};
-        let result = new Area();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["cityId"] = this.cityId;
-        if (Array.isArray(this.polygonCoordinates)) {
-            data["polygonCoordinates"] = [];
-            for (let item of this.polygonCoordinates)
-                data["polygonCoordinates"].push(item.toJSON());
-        }
-        return data;
-    }
-}
-
-export interface IArea {
-    id: number;
-    cityId: number;
-    polygonCoordinates: NpgsqlPoint[];
-}
-
-export class BuildingPowerConnections implements IBuildingPowerConnections {
-    gasCookingConsumption!: number;
-    gasWaterHeatingConsumptionWithoutBoiler!: number;
-    gasHeatingConsumption!: number;
-    electricityCooking!: number;
-    electricityWaterHeating!: number;
-    centralHeating!: number;
-    centralWater!: number;
-    gasCookingConsumptionFuel!: number;
-    gasWaterHeatingConsumptionWithoutBoilerFuel!: number;
-    gasHeatingConsumptionFuel!: number;
-    electricityCookingFuel!: number;
-    electricityWaterHeatingFuel!: number;
-    centralHeatingFuel!: number;
-    centralWaterFuel!: number;
-    s1!: number;
-    s2!: number;
-    s3!: number;
-    s4!: number;
-    s5!: number;
-    s6!: number;
-    s7!: number;
-    s8!: number;
-    s9!: number;
-
-    constructor(data?: IBuildingPowerConnections) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.gasCookingConsumption = _data["gasCookingConsumption"];
-            this.gasWaterHeatingConsumptionWithoutBoiler = _data["gasWaterHeatingConsumptionWithoutBoiler"];
-            this.gasHeatingConsumption = _data["gasHeatingConsumption"];
-            this.electricityCooking = _data["electricityCooking"];
-            this.electricityWaterHeating = _data["electricityWaterHeating"];
-            this.centralHeating = _data["centralHeating"];
-            this.centralWater = _data["centralWater"];
-            this.gasCookingConsumptionFuel = _data["gasCookingConsumptionFuel"];
-            this.gasWaterHeatingConsumptionWithoutBoilerFuel = _data["gasWaterHeatingConsumptionWithoutBoilerFuel"];
-            this.gasHeatingConsumptionFuel = _data["gasHeatingConsumptionFuel"];
-            this.electricityCookingFuel = _data["electricityCookingFuel"];
-            this.electricityWaterHeatingFuel = _data["electricityWaterHeatingFuel"];
-            this.centralHeatingFuel = _data["centralHeatingFuel"];
-            this.centralWaterFuel = _data["centralWaterFuel"];
-            this.s1 = _data["s1"];
-            this.s2 = _data["s2"];
-            this.s3 = _data["s3"];
-            this.s4 = _data["s4"];
-            this.s5 = _data["s5"];
-            this.s6 = _data["s6"];
-            this.s7 = _data["s7"];
-            this.s8 = _data["s8"];
-            this.s9 = _data["s9"];
-        }
-    }
-
-    static fromJS(data: any): BuildingPowerConnections {
-        data = typeof data === 'object' ? data : {};
-        let result = new BuildingPowerConnections();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["gasCookingConsumption"] = this.gasCookingConsumption;
-        data["gasWaterHeatingConsumptionWithoutBoiler"] = this.gasWaterHeatingConsumptionWithoutBoiler;
-        data["gasHeatingConsumption"] = this.gasHeatingConsumption;
-        data["electricityCooking"] = this.electricityCooking;
-        data["electricityWaterHeating"] = this.electricityWaterHeating;
-        data["centralHeating"] = this.centralHeating;
-        data["centralWater"] = this.centralWater;
-        data["gasCookingConsumptionFuel"] = this.gasCookingConsumptionFuel;
-        data["gasWaterHeatingConsumptionWithoutBoilerFuel"] = this.gasWaterHeatingConsumptionWithoutBoilerFuel;
-        data["gasHeatingConsumptionFuel"] = this.gasHeatingConsumptionFuel;
-        data["electricityCookingFuel"] = this.electricityCookingFuel;
-        data["electricityWaterHeatingFuel"] = this.electricityWaterHeatingFuel;
-        data["centralHeatingFuel"] = this.centralHeatingFuel;
-        data["centralWaterFuel"] = this.centralWaterFuel;
-        data["s1"] = this.s1;
-        data["s2"] = this.s2;
-        data["s3"] = this.s3;
-        data["s4"] = this.s4;
-        data["s5"] = this.s5;
-        data["s6"] = this.s6;
-        data["s7"] = this.s7;
-        data["s8"] = this.s8;
-        data["s9"] = this.s9;
-        return data;
-    }
-}
-
-export interface IBuildingPowerConnections {
-    gasCookingConsumption: number;
-    gasWaterHeatingConsumptionWithoutBoiler: number;
-    gasHeatingConsumption: number;
-    electricityCooking: number;
-    electricityWaterHeating: number;
-    centralHeating: number;
-    centralWater: number;
-    gasCookingConsumptionFuel: number;
-    gasWaterHeatingConsumptionWithoutBoilerFuel: number;
-    gasHeatingConsumptionFuel: number;
-    electricityCookingFuel: number;
-    electricityWaterHeatingFuel: number;
-    centralHeatingFuel: number;
-    centralWaterFuel: number;
-    s1: number;
-    s2: number;
-    s3: number;
-    s4: number;
-    s5: number;
-    s6: number;
-    s7: number;
-    s8: number;
-    s9: number;
+    geometryPoints: Point[];
 }
 
 export class Pipe implements IPipe {

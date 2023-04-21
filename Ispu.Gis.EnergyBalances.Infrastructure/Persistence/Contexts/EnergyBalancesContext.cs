@@ -14,7 +14,7 @@ public partial class EnergyBalancesContext : DbContext
     {
     }
 
-    public virtual DbSet<Area> Areas { get; set; }
+    public virtual DbSet<CityDistrict> Areas { get; set; }
 
     public virtual DbSet<Building> Buildings { get; set; }
 
@@ -40,7 +40,7 @@ public partial class EnergyBalancesContext : DbContext
             .HasPostgresExtension("tiger", "postgis_tiger_geocoder")
             .HasPostgresExtension("topology", "postgis_topology");
 
-        modelBuilder.Entity<Area>(entity =>
+        modelBuilder.Entity<CityDistrict>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("areas_pkey");
 
@@ -50,7 +50,7 @@ public partial class EnergyBalancesContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.CityId).HasColumnName("city_id");
-            entity.Property(e => e.PolygonCoordinates).HasColumnName("polygon_coordinates");
+            //entity.Property(e => e.PolygonCoordinates).HasColumnName("polygon_coordinates");
         });
 
         modelBuilder.Entity<Building>(entity =>
@@ -108,13 +108,13 @@ public partial class EnergyBalancesContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id");
             entity.Property(e => e.MinZoom).HasColumnName("min_zoom");
-            entity.Property(e => e.NameRussian)
+            entity.Property(e => e.NativeName)
                 .HasDefaultValueSql("''::text")
                 .HasColumnName("name_russian");
-            entity.Property(e => e.NorthWestBound)
+            entity.Property(e => e.NorthWestPoint)
                 .HasDefaultValueSql("'(0,0)'::point")
                 .HasColumnName("north_west_bound");
-            entity.Property(e => e.SouthEastBound)
+            entity.Property(e => e.SouthEastPoint)
                 .HasDefaultValueSql("'(0,0)'::point")
                 .HasColumnName("south_east_bound");
         });

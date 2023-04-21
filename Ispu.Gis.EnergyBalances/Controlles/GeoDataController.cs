@@ -1,11 +1,10 @@
-﻿using Ispu.Gis.EnergyBalances.Application.Models;
+﻿using AutoMapper;
+using Ispu.Gis.EnergyBalances.Application.Models;
 using Ispu.Gis.EnergyBalances.Application.Storages;
 using Ispu.Gis.EnergyBalances.Domain.Entities;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
-using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Building = Ispu.Gis.EnergyBalances.Domain.Entities.Building;
 
 namespace Ispu.Gis.EnergyBalances.Controlles;
 
@@ -13,53 +12,61 @@ namespace Ispu.Gis.EnergyBalances.Controlles;
 [Route("api/geodata")]
 public class GeoDataController : ControllerBase
 {
-    private readonly EnergyBalancesContext _db;
+    //private readonly EnergyBalancesContext _db;
     private readonly IPipesStorage _pipesStorage;
+    private readonly CityEnergyModelingContext _newDb;
+    private readonly IMapper _mapper;
 
-    public GeoDataController(EnergyBalancesContext db, IPipesStorage pipesStorage)
+    public GeoDataController(IPipesStorage pipesStorage, CityEnergyModelingContext newDb, IMapper mapper)
     {
-        _db = db;
+        //_db = db;
         _pipesStorage = pipesStorage;
+        _newDb = newDb;
+        _mapper = mapper;
     }
 
-    [HttpGet("[action]/{cityId}")]
-    public Task<List<Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building>> GetHouses(int cityId)
-    {
-        return _db.Buildings.Where(x => x.CityId == cityId).ToListAsync();
-    }
+    // [HttpGet("[action]/{cityId}")]
+    // public Task<List<Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building>> GetHouses(int cityId)
+    // {
+    //     return _db.Buildings.Where(x => x.CityId == cityId).ToListAsync();
+    // }
 
     [HttpGet("[action]")]
-    public Task<List<City>> GetCities()
+    public async Task<List<City>> GetCities()
     {
-        return _db.Cities.ToListAsync();
+        var cities = await _newDb.Cities.Select(x => _mapper.Map<City>(x)).ToListAsync();
+        return cities;
     }
 
     [HttpGet("[action]/{cityId}")]
-    public Task<List<Area>> GetAreas(int cityId)
+    public async Task<List<CityDistrict>> GetAreas(int cityId)
     {
-        return _db.Areas.Where(x => x.CityId == cityId).ToListAsync();
+        var districts = await _newDb.CityDistricts.Where(x => x.CityId == cityId)
+            .Select(x => _mapper.Map<CityDistrict>(x))
+            .ToListAsync();
+        return districts;
     }
 
-    [HttpGet("[action]/{buildingId}")]
-    public Task<BuildingsInfo?> GetBuildingInfo(int buildingId)
-    {
-        return _db.BuildingsInfos.FirstOrDefaultAsync(x => x.BuildingId == buildingId);
-    }
-
-    [HttpGet("[action]/{buildingId}")]
-    public async Task<BuildingPowerConnections> CalculateEnergyBalance(int buildingId)
-    {
-        var buildingInfo = await _db.BuildingsInfos.FirstAsync(x => x.BuildingId == buildingId);
-        var building = new Building
-        {
-            LivingSquare = buildingInfo.Area,
-            ResidentsCount = buildingInfo.ResidentsCount
-        };
-
-        var pC = new BuildingPowerConnections(building);
-
-        return pC;
-    }
+    // [HttpGet("[action]/{buildingId}")]
+    // public Task<BuildingsInfo?> GetBuildingInfo(int buildingId)
+    // {
+    //     return _db.BuildingsInfos.FirstOrDefaultAsync(x => x.BuildingId == buildingId);
+    // }
+    //
+    // [HttpGet("[action]/{buildingId}")]
+    // public async Task<BuildingPowerConnections> CalculateEnergyBalance(int buildingId)
+    // {
+    //     var buildingInfo = await _db.BuildingsInfos.FirstAsync(x => x.BuildingId == buildingId);
+    //     var building = new Building
+    //     {
+    //         LivingSquare = buildingInfo.Area,
+    //         ResidentsCount = buildingInfo.ResidentsCount
+    //     };
+    //
+    //     var pC = new BuildingPowerConnections(building);
+    //
+    //     return pC;
+    // }
 
     [HttpGet("[action]")]
     public async Task<List<Pipe>> GetPipeGroups()
@@ -70,13 +77,13 @@ public class GeoDataController : ControllerBase
             DOut = x.Dobr,
             DIn = x.Dpod,
             Length = x.ShapeLeng,
-            Points = x.WkbGeometry!.Coordinates.Select(t=> new GeographyPoint(t)).ToList()
+            Points = x.WkbGeometry!.Coordinates.Select(t => new GeographyPoint(t)).ToList()
         }).ToList();
     }
-    
-    [HttpGet("[action]")]
-    public Task<List<HeatingStation>> GetHeatingStations()
-    {
-        return _db.HeatingStations.ToListAsync();
-    }
+
+    // [HttpGet("[action]")]
+    // public Task<List<HeatingStation>> GetHeatingStations()
+    // {
+    //     return _db.HeatingStations.ToListAsync();
+    // }
 }

@@ -1,28 +1,17 @@
-using Ispu.Gis.EnergyBalances.Application.Storages;
+using Ispu.Gis.EnergyBalances;
+using Ispu.Gis.EnergyBalances.Application;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<CityEnergyModelingContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        o => o.UseNetTopologySuite()));
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddApplicationServices();
+builder.Services.AddWebApiServices();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<EnergyBalancesContext>(options =>
-    options.UseNpgsql(connectionString, o => o.UseNetTopologySuite()));
-
-builder.Services.AddSwaggerDocument(settings =>
-{
-    settings.PostProcess = document =>
-    {
-        document.Info.Version = "v1";
-        document.Info.Title = "Energy Balances API";
-        document.Info.Description = "REST API Energy Balances.";
-    };
-});
-
-builder.Services.AddSingleton<IPipesStorage, PipesStorage>();
 
 var app = builder.Build();
 
@@ -40,21 +29,21 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller}/{action=Index}/{id?}");
 
 app.MapFallbackToFile("index.html");
 
+
 app.Lifetime.ApplicationStarted.Register(OnAppStarted);
 
 app.Run();
 
-
 async void OnAppStarted()
 {
-    var pipesService = app.Services.GetRequiredService<IPipesStorage>();
-
-    //await pipesService.Initialize();
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<CityEnergyModelingContext>();
+   
+    await dbContext.Database.MigrateAsync();
 }

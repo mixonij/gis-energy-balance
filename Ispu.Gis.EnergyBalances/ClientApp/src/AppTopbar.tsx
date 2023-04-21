@@ -25,7 +25,7 @@ export const AppTopbar = (props: TopbarProps) => {
         <div className="layout-topbar">
             <Link to="/" className="layout-topbar-logo">
                 <img
-                    // src={'assets/layout/images/logo.svg'}
+                    src={'assets/layout/images/logo1.svg'}
                     alt="logo"/>
                 <span className="ml-2 text-center">Моделирование энергобалансов</span>
             </Link>
