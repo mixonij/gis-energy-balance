@@ -26,16 +26,23 @@ public class CityEnergyModelingContext: DbContext
     /// Районы города
     /// </summary>
     public virtual DbSet<CityDistrict> CityDistricts { get; set; } = null!;
+
+    /// <summary>
+    /// Здания
+    /// </summary>
+    public virtual DbSet<Building> Buildings { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
-            .HasPostgresExtension("fuzzystrmatch")
             .HasPostgresExtension("postgis")
+            .HasPostgresExtension("fuzzystrmatch")
             .HasPostgresExtension("tiger", "postgis_tiger_geocoder")
             .HasPostgresExtension("topology", "postgis_topology");
 
         modelBuilder.ApplyConfiguration(new CityMapper());
         modelBuilder.ApplyConfiguration(new CityDistrictMapper());
+        modelBuilder.ApplyConfiguration(new BuildingMapper());
         
         base.OnModelCreating(modelBuilder);
     }

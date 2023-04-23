@@ -45,5 +45,5 @@ async void OnAppStarted()
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<CityEnergyModelingContext>();
    
-    await dbContext.Database.MigrateAsync();
+    //await dbContext.Database.MigrateAsync();
 }

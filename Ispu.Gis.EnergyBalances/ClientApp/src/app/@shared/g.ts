@@ -316,6 +316,7 @@ export class CityDistrict implements ICityDistrict {
     id!: number;
     cityId!: number;
     geometryPoints!: Point[];
+    buildings!: Building[];
 
     constructor(data?: ICityDistrict) {
         if (data) {
@@ -326,6 +327,7 @@ export class CityDistrict implements ICityDistrict {
         }
         if (!data) {
             this.geometryPoints = [];
+            this.buildings = [];
         }
     }
 
@@ -337,6 +339,11 @@ export class CityDistrict implements ICityDistrict {
                 this.geometryPoints = [] as any;
                 for (let item of _data["geometryPoints"])
                     this.geometryPoints!.push(Point.fromJS(item));
+            }
+            if (Array.isArray(_data["buildings"])) {
+                this.buildings = [] as any;
+                for (let item of _data["buildings"])
+                    this.buildings!.push(Building.fromJS(item));
             }
         }
     }
@@ -357,6 +364,11 @@ export class CityDistrict implements ICityDistrict {
             for (let item of this.geometryPoints)
                 data["geometryPoints"].push(item.toJSON());
         }
+        if (Array.isArray(this.buildings)) {
+            data["buildings"] = [];
+            for (let item of this.buildings)
+                data["buildings"].push(item.toJSON());
+        }
         return data;
     }
 }
@@ -364,6 +376,78 @@ export class CityDistrict implements ICityDistrict {
 export interface ICityDistrict {
     id: number;
     cityId: number;
+    geometryPoints: Point[];
+    buildings: Building[];
+}
+
+export class Building implements IBuilding {
+    livingSquare!: number;
+    residentsCount!: number;
+    aOk!: number;
+    af!: number;
+    v!: number;
+    id!: number;
+    geometryPoints!: Point[];
+
+    constructor(data?: IBuilding) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.geometryPoints = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.livingSquare = _data["livingSquare"];
+            this.residentsCount = _data["residentsCount"];
+            this.aOk = _data["aOk"];
+            this.af = _data["af"];
+            this.v = _data["v"];
+            this.id = _data["id"];
+            if (Array.isArray(_data["geometryPoints"])) {
+                this.geometryPoints = [] as any;
+                for (let item of _data["geometryPoints"])
+                    this.geometryPoints!.push(Point.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): Building {
+        data = typeof data === 'object' ? data : {};
+        let result = new Building();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["livingSquare"] = this.livingSquare;
+        data["residentsCount"] = this.residentsCount;
+        data["aOk"] = this.aOk;
+        data["af"] = this.af;
+        data["v"] = this.v;
+        data["id"] = this.id;
+        if (Array.isArray(this.geometryPoints)) {
+            data["geometryPoints"] = [];
+            for (let item of this.geometryPoints)
+                data["geometryPoints"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface IBuilding {
+    livingSquare: number;
+    residentsCount: number;
+    aOk: number;
+    af: number;
+    v: number;
+    id: number;
     geometryPoints: Point[];
 }
 

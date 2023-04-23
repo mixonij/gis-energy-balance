@@ -1,18 +1,45 @@
-﻿using NpgsqlTypes;
+﻿using NetTopologySuite.Geometries;
+using NpgsqlTypes;
 
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 
-public partial class Building
+/// <summary>
+/// Здание
+/// </summary>
+public class Building
 {
+    /// <summary>
+    /// Идентификатор здания
+    /// </summary>
     public int Id { get; set; }
 
-    public int CityId { get; set; }
+    /// <summary>
+    /// Идентификатор города
+    /// </summary>
+    public int? CityId { get; set; }
 
-    public NpgsqlPoint Coordinates { get; set; }
+    /// <summary>
+    /// Идентификатор района
+    /// </summary>
+    public int? DistrictId { get; set; }
+    
+    /// <summary>
+    /// Геометрия
+    /// </summary>
+    public Polygon Geometry { get; set; }
 
-    public NpgsqlPoint[] PolygonCoordinates { get; set; } = null!;
-
-    public virtual ICollection<BuildingsInfo> BuildingsInfos { get; } = new List<BuildingsInfo>();
-
-    public virtual City City { get; set; } = null!;
+    /// <summary>
+    /// Город
+    /// </summary>
+    public City? City { get; set; }
+    
+    /// <summary>
+    /// Городской район
+    /// </summary>
+    public CityDistrict? CityDistrict { get; set; }
+    
+    /// <summary>
+    /// Информация о здании
+    /// </summary>
+    public BuildingsInfo BuildingInfo { get; set; } 
 }

@@ -1,25 +1,28 @@
-using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+﻿using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Mappings;
 
 /// <summary>
-/// Маппер городских районов
+/// Маппер зданий
 /// </summary>
-public class CityDistrictMapper : IEntityTypeConfiguration<CityDistrict>
+public class BuildingMapper: IEntityTypeConfiguration<Building>
 {
     /// <summary>
     /// Конфигурация
     /// </summary>
     /// <param name="builder">Конструктор сущностей</param>
-    public void Configure(EntityTypeBuilder<CityDistrict> builder)
+    public void Configure(EntityTypeBuilder<Building> builder)
     {
         // Первичный ключ
-        builder.HasKey(e => e.Id).HasName("areas_pkey");
+        builder.HasKey(e => e.Id).HasName("buildings_pkey");
 
         // Таблица
-        builder.ToTable("city_districts");
+        builder.ToTable("buildings");
+
+        // Индекс
+        builder.HasIndex(e => e.Id, "IX_buildings_id");
 
         // Идентификатор
         builder.Property(e => e.Id)
@@ -31,20 +34,18 @@ public class CityDistrictMapper : IEntityTypeConfiguration<CityDistrict>
         // Идентификатор города
         builder.Property(e => e.CityId)
             .HasColumnName("city_id")
-            .HasColumnOrder(1)
-            .IsRequired();
-
+            .HasColumnOrder(1);
+        
+        // Идентификатор района
+        builder.Property(e => e.DistrictId)
+            .HasColumnName("district_id")
+            .HasColumnOrder(2);
+        
         // Геометрия
         builder.Property(e => e.Geometry)
             .HasColumnType("geometry(Polygon,4326)")
             .HasColumnName("geometry")
-            .HasColumnOrder(2)
+            .HasColumnOrder(3)
             .IsRequired();
-        
-        // Отношение один ко многим для зданий района
-        builder.HasMany(e => e.Buildings)
-            .WithOne(e => e.CityDistrict)
-            .HasForeignKey(e => e.DistrictId)
-            .HasPrincipalKey(e => e.Id);
     }
 }

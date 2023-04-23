@@ -47,35 +47,48 @@ public class HousesCommands
 
         foreach (var area in areas)
         {
-            var points = area.Nodes;
-            List<LineString> lines = new();
-            for (var i = 0; i < points.Length; i++)
-            {
-                if (i == points.Length - 1)
-                {
-                    break;
-                }
-
-                var startPoint = points[i];
-                var endPoint = points[i + 1];
-
-                var coordinates = new Coordinate[]
-                {
-                    new(startPoint.Longitude!.Value, startPoint.Latitude!.Value),
-                    new(endPoint.Longitude!.Value, endPoint.Latitude!.Value)
-                };
-
-                lines.Add(new LineString(coordinates));
-            }
+            var geometry = GetGeometry(area);
 
             var cityArea = new CityDistrict
             {
                 CityId = city.Id,
-                Geometry = new MultiLineString(lines.ToArray())
+                Geometry = geometry
             };
 
             await dbContext.CityDistricts.AddAsync(cityArea);
         }
+
+        await dbContext.SaveChangesAsync();
+
+        var buildings = osmNodes.Where(x => x.Type == OsmGeoType.Way
+                                            && x.Tags.Any(y => y.Key is "addr:street" or "addr:housenumber"))
+            .OfType<CompleteWay>().ToList();
+        
+        await dbContext.Buildings.AddRangeAsync(buildings.Select(GetGeometry).Select(geometry => new Building
+        {
+            Geometry = geometry
+        }));
+
+        await dbContext.SaveChangesAsync();
+
+        var cityDistricts = await dbContext.CityDistricts.ToListAsync();
+
+        foreach (var building in dbContext.Buildings)
+        {
+            var cityDistrict = cityDistricts.FirstOrDefault(x => x.Geometry.Contains(building.Geometry));
+            if (cityDistrict is null)
+            {
+                continue;
+            }
+
+            building.CityId = cityDistrict.CityId;
+            building.DistrictId = cityDistrict.Id;
+
+            dbContext.Buildings.Update(building);
+        }
+
+        await dbContext.SaveChangesAsync();
+
 
         // var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
         //     "Server=localhost;Port=5433;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
@@ -172,8 +185,42 @@ public class HousesCommands
         //     await dbContext.Areas.AddAsync(cityArea);
         // }
         //
-        await dbContext.SaveChangesAsync();
+
         //
         return await Task.FromResult(1);
+    }
+
+    private static Polygon GetGeometry(CompleteWay completeWay)
+    {
+        var points = completeWay.Nodes;
+
+        var linearRing = new LinearRing(points.Select(x => new Coordinate(x.Longitude!.Value, x.Latitude!.Value)).ToArray());
+        
+        // List<LineString> lines = new();
+        // for (var i = 0; i < points.Length; i++)
+        // {
+        //     if (i == points.Length - 1)
+        //     {
+        //         break;
+        //     }
+        //
+        //     var startPoint = points[i];
+        //     var endPoint = points[i + 1];
+        //
+        //     var coordinates = new Coordinate[]
+        //     {
+        //         new(startPoint.Longitude!.Value, startPoint.Latitude!.Value),
+        //         new(endPoint.Longitude!.Value, endPoint.Latitude!.Value)
+        //     };
+        //
+        //     var lr = new LinearRing(coordinates);
+        //
+        //
+        //     lines.Add(new LineString(coordinates));
+        // }
+        
+
+        var geometry = new Polygon(linearRing);
+        return geometry;
     }
 }

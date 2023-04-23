@@ -27,16 +27,18 @@ public class PipesStorage : IPipesStorage
 
         await using var db = scope.ServiceProvider.GetRequiredService<EnergyBalancesContext>();
 
-        return await db.Heatingnetworkivs.Select(x => new Heatingnetworkiv
-        {
-            OgcFid = x.OgcFid,
-            WkbGeometry = EF.Functions.Transform(x.WkbGeometry!, 4326),
-            Objectid = x.Objectid,
-            Sys = x.Sys,
-            Dpod = x.Dpod,
-            Dobr = x.Dobr,
-            ShapeLeng = x.ShapeLeng
-        }).ToListAsync();
+        return new List<Heatingnetworkiv>();
+
+        // return await db.Heatingnetworkivs.Select(x => new Heatingnetworkiv
+        // {
+        //     OgcFid = x.OgcFid,
+        //     WkbGeometry = EF.Functions.Transform(x.WkbGeometry!, 4326),
+        //     Objectid = x.Objectid,
+        //     Sys = x.Sys,
+        //     Dpod = x.Dpod,
+        //     Dobr = x.Dobr,
+        //     ShapeLeng = x.ShapeLeng
+        // }).ToListAsync();
     }
 
     public async Task Initialize()
@@ -45,34 +47,34 @@ public class PipesStorage : IPipesStorage
 
         await using var db = scope.ServiceProvider.GetRequiredService<EnergyBalancesContext>();
         
-        var coords = await db.Heatingnetworkivs.Select(x=> new Heatingnetworkiv
-        {
-            OgcFid = x.OgcFid,
-            WkbGeometry = EF.Functions.Transform(x.WkbGeometry!, 4326),
-            Objectid = x.Objectid,
-            Sys = x.Sys,
-            Dpod = x.Dpod,
-            Dobr = x.Dobr,
-            ShapeLeng = x.ShapeLeng
-        }).ToDictionaryAsync(x => x.OgcFid);
+        // var coords = await db.Heatingnetworkivs.Select(x=> new Heatingnetworkiv
+        // {
+        //     OgcFid = x.OgcFid,
+        //     WkbGeometry = EF.Functions.Transform(x.WkbGeometry!, 4326),
+        //     Objectid = x.Objectid,
+        //     Sys = x.Sys,
+        //     Dpod = x.Dpod,
+        //     Dobr = x.Dobr,
+        //     ShapeLeng = x.ShapeLeng
+        // }).ToDictionaryAsync(x => x.OgcFid);
 
         List<List<Heatingnetworkiv?>> groups = new();
 
-        while (coords.Any())
-        {
-            var item = coords.First();
-            coords.Remove(item.Key);
-
-            List<Heatingnetworkiv?> group = new()
-            {
-                item.Value
-            };
-
-            var connectedPipes = await GetPipesAsync(coords, item.Value);
-            group.AddRange(connectedPipes);
-
-            groups.Add(group.DistinctBy(x => x.OgcFid).ToList());
-        }
+        // while (coords.Any())
+        // {
+        //     var item = coords.First();
+        //     coords.Remove(item.Key);
+        //
+        //     List<Heatingnetworkiv?> group = new()
+        //     {
+        //         item.Value
+        //     };
+        //
+        //     var connectedPipes = await GetPipesAsync(coords, item.Value);
+        //     group.AddRange(connectedPipes);
+        //
+        //     groups.Add(group.DistinctBy(x => x.OgcFid).ToList());
+        // }
 
         _groups = groups;
     }

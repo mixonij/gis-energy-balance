@@ -20,10 +20,15 @@ public class CityDistrict
     /// <summary>
     /// Геометрия
     /// </summary>
-    public MultiLineString Geometry { get; set; }
+    public Polygon Geometry { get; set; }
     
     /// <summary>
     /// Город
     /// </summary>
     public City? City { get; set; }
+
+    /// <summary>
+    /// Здания района
+    /// </summary>
+    public List<Building> Buildings { get; set; } = new();
 }

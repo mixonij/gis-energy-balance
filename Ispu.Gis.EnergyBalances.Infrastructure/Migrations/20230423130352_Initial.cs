@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
 
@@ -24,11 +25,11 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    min_zoom = table.Column<int>(type: "integer", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false, defaultValueSql: "''::text"),
                     name_native = table.Column<string>(type: "text", nullable: false, defaultValueSql: "''::text"),
                     north_west_point = table.Column<NpgsqlPoint>(type: "point", nullable: false, defaultValueSql: "'(0,0)'::point"),
-                    south_east_point = table.Column<NpgsqlPoint>(type: "point", nullable: false, defaultValueSql: "'(0,0)'::point"),
-                    min_zoom = table.Column<int>(type: "integer", nullable: false)
+                    south_east_point = table.Column<NpgsqlPoint>(type: "point", nullable: false, defaultValueSql: "'(0,0)'::point")
                 },
                 constraints: table =>
                 {
@@ -36,21 +37,20 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Building",
+                name: "city_districts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CityId = table.Column<int>(type: "integer", nullable: false),
-                    Coordinates = table.Column<NpgsqlPoint>(type: "point", nullable: false),
-                    PolygonCoordinates = table.Column<NpgsqlPoint[]>(type: "point[]", nullable: false)
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    city_id = table.Column<int>(type: "integer", nullable: false),
+                    geometry = table.Column<Polygon>(type: "geometry(Polygon,4326)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Building", x => x.Id);
+                    table.PrimaryKey("areas_pkey", x => x.id);
                     table.ForeignKey(
-                        name: "FK_Building_cities_CityId",
-                        column: x => x.CityId,
+                        name: "FK_city_districts_cities_city_id",
+                        column: x => x.city_id,
                         principalTable: "cities",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -78,6 +78,31 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "buildings",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    city_id = table.Column<int>(type: "integer", nullable: true),
+                    district_id = table.Column<int>(type: "integer", nullable: true),
+                    geometry = table.Column<Polygon>(type: "geometry(Polygon,4326)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("buildings_pkey", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_buildings_cities_city_id",
+                        column: x => x.city_id,
+                        principalTable: "cities",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_buildings_city_districts_district_id",
+                        column: x => x.district_id,
+                        principalTable: "city_districts",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "BuildingsInfo",
                 columns: table => new
                 {
@@ -92,10 +117,10 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_BuildingsInfo", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_BuildingsInfo_Building_BuildingId",
+                        name: "FK_BuildingsInfo_buildings_BuildingId",
                         column: x => x.BuildingId,
-                        principalTable: "Building",
-                        principalColumn: "Id",
+                        principalTable: "buildings",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -105,14 +130,30 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 values: new object[] { 1, 11, "Ivanovo", "Иваново", new NpgsqlTypes.NpgsqlPoint(57.093009000000002, 40.661774000000001), new NpgsqlTypes.NpgsqlPoint(56.903770999999999, 41.307220000000001) });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Building_CityId",
-                table: "Building",
-                column: "CityId");
+                name: "IX_buildings_city_id",
+                table: "buildings",
+                column: "city_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_buildings_district_id",
+                table: "buildings",
+                column: "district_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_buildings_id",
+                table: "buildings",
+                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_BuildingsInfo_BuildingId",
                 table: "BuildingsInfo",
-                column: "BuildingId");
+                column: "BuildingId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_city_districts_city_id",
+                table: "city_districts",
+                column: "city_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HeatingStation_CityId",
@@ -130,7 +171,10 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 name: "HeatingStation");
 
             migrationBuilder.DropTable(
-                name: "Building");
+                name: "buildings");
+
+            migrationBuilder.DropTable(
+                name: "city_districts");
 
             migrationBuilder.DropTable(
                 name: "cities");

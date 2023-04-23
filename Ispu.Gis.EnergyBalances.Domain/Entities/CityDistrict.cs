@@ -1,5 +1,3 @@
-using NetTopologySuite.Geometries;
-
 namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 
 /// <summary>
@@ -21,4 +19,9 @@ public class CityDistrict: IEntity
     /// Точки геометрии
     /// </summary>
     public Point[] GeometryPoints { get; set; } = Array.Empty<Point>();
+
+    /// <summary>
+    /// Здания
+    /// </summary>
+    public Building[] Buildings { get; set; } = Array.Empty<Building>();
 }

@@ -1,6 +1,6 @@
 ﻿namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 
-public class Building
+public class Building: IEntity
 {
     public double LivingSquare { get; set; }
     
@@ -11,4 +11,11 @@ public class Building
     public double AF { get; set; } = 251;
 
     public double V => LivingSquare * 2.5;
+    
+    public int Id { get; set; }
+    
+    /// <summary>
+    /// Точки геометрии
+    /// </summary>
+    public Point[] GeometryPoints { get; set; } = Array.Empty<Point>();
 }

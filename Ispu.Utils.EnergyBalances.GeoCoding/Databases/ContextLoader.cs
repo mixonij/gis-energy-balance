@@ -17,9 +17,11 @@ public class ContextLoader
     {
         var options = new DbContextOptionsBuilder<CityEnergyModelingContext>()
             .UseNpgsql(connectionString, options => options.UseNetTopologySuite()).Options;
-        var dbContext = new CityEnergyModelingContext(options);
+        await using var dbContext = new CityEnergyModelingContext(options);
+        //await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.MigrateAsync();
-
-        return dbContext;
+        
+        
+        return new CityEnergyModelingContext(options);
     }
 }

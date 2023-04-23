@@ -26,9 +26,9 @@ public class GeoDataController : ControllerBase
     }
 
     // [HttpGet("[action]/{cityId}")]
-    // public Task<List<Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building>> GetHouses(int cityId)
+    // public Task<List<Building>> GetHouses(int cityId)
     // {
-    //     return _db.Buildings.Where(x => x.CityId == cityId).ToListAsync();
+    //     return _newDb.Buildings.Select(x => _mapper.Map<Building>(x)).ToListAsync();
     // }
 
     [HttpGet("[action]")]
@@ -42,6 +42,7 @@ public class GeoDataController : ControllerBase
     public async Task<List<CityDistrict>> GetAreas(int cityId)
     {
         var districts = await _newDb.CityDistricts.Where(x => x.CityId == cityId)
+            .Include(x => x.Buildings)
             .Select(x => _mapper.Map<CityDistrict>(x))
             .ToListAsync();
         return districts;

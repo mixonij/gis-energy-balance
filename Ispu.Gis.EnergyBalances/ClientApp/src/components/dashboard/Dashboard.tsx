@@ -1,8 +1,18 @@
-import React, {MutableRefObject, useCallback, useEffect, useRef, useState} from 'react';
-import {LayerGroup, LayersControl, MapContainer, Marker, Polygon, Polyline, TileLayer} from 'react-leaflet';
+import React, {MutableRefObject, Ref, useCallback, useEffect, useRef, useState} from 'react';
+import {
+    FeatureGroup,
+    LayerGroup,
+    LayersControl,
+    MapContainer,
+    Marker,
+    Polygon,
+    Polyline,
+    TileLayer
+} from 'react-leaflet';
 import {useGeolocated} from "react-geolocated";
 import "./style.css"
 import {
+    Building,
     City,
     CityDistrict,
     GeoDataService,
@@ -16,6 +26,7 @@ import {Toolbar} from 'primereact/toolbar';
 import {Button} from 'primereact/button';
 import {SplitButton} from 'primereact/splitbutton';
 import {Toast} from 'primereact/toast';
+import {Badge} from "primereact/badge";
 
 
 const Dashboard = (props: any) => {
@@ -29,17 +40,17 @@ const Dashboard = (props: any) => {
 
     const toast = useRef() as MutableRefObject<Toast>;
 
+    // @ts-ignore
+    const buildingLayer = useRef() as MutableRefObject<FeatureGroup<any>>;
+
 
     const [geoService] = useState<IGeoDataService>(new GeoDataService())
-    //const [buildings, setBuildings] = useState<Array<Building>>([]);
+    const [buildings, setBuildings] = useState<Array<Building>>([]);
     const [areas, setAreas] = useState<Array<CityDistrict>>([]);
     const [cities, setCities] = useState<Array<City>>([]);
-    const [pipes, setPipes] = useState<Array<Pipe>>([]);
-    //const [heatingStations, setHeatingStations] = useState<Array<HeatingStation>>([]);
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
-    //const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
-    //const [selectedEnergyBalance, setSelectedEnergyBalance] = useState<BuildingPowerConnections | null>(null);
-    //const [selectedBuildingInfo, setSelectedBuildingInfo] = useState<BuildingsInfo | null>(null);
+    const [selectedEntity, setSelectedEntity] = useState<CityDistrict | Building | null>(null);
+
     const [, setCurrentZoom] = useState<number>(0);
 
     const onCityChange = (e: { value: City }) => {
@@ -47,11 +58,19 @@ const Dashboard = (props: any) => {
     }
 
     const loadData = useCallback(async () => {
-        // const data = await geoService.getHouses(selectedCity?.id!);
-        // setBuildings(data ?? []);
-
         const area = await geoService.getAreas(selectedCity?.id!)
         setAreas(area ?? []);
+
+        //const data = await geoService.getHouses(selectedCity?.id!);
+        let buildings: Building[] = [];
+        if (area) {
+            for (const district of area) {
+                for (const districtBuilding of district.buildings) {
+                    buildings.push(districtBuilding);
+                }
+            }
+        }
+        setBuildings(buildings);
 
         // const pipes = await geoService.getPipeGroups();
         // setPipes(pipes ?? []);
@@ -85,11 +104,11 @@ const Dashboard = (props: any) => {
 
             life: 3000
         }));
-    }, [getCities, loadData]);
+    }, [getCities]);
 
     useEffect(() => {
         if (!selectedCity) {
-            return;
+            setAreas([]);
         }
 
         loadData();
@@ -100,39 +119,19 @@ const Dashboard = (props: any) => {
     }, [loadBuildingInfo])
 
     const fillBlueOptions = {fillColor: 'blue'}
-    const fillOrangeOptions = {fillColor: 'orange', color: 'red'}
+    const fillOrangeOptions = {color: 'red', fillColor: 'orange'}
     const purpleOptions = {fillColor: 'red'}
     const limeOptions = {color: 'lime'}
 
-    const items = [
-        {
-            label: 'Update',
-            icon: 'pi pi-refresh'
-        },
-        {
-            label: 'Delete',
-            icon: 'pi pi-times'
-        },
-        {
-            label: 'React Website',
-            icon: 'pi pi-external-link',
-            command: () => {
-                window.location.href = 'https://reactjs.org/'
-            }
-        },
-        {
-            label: 'Upload',
-            icon: 'pi pi-upload',
-            command: () => {
-                window.location.hash = "/fileupload"
-            }
-        }
-    ];
-
     const leftContents = (
         <>
-            <Dropdown value={selectedCity} options={cities} onChange={onCityChange}
+            <Dropdown className="m-2" value={selectedCity} options={cities} showClear onChange={onCityChange}
                       optionLabel="nativeName" placeholder="Выберите город"/>
+
+            <Badge className="m-2" value={selectedEntity && "buildings" in selectedEntity ? 1 : areas.length} size="large"
+                   severity="warning"/>
+            <Badge className="m-2" value={selectedEntity && "buildings" in selectedEntity ? selectedEntity.buildings.length : buildings.length}
+                   size="large" severity="success"/>
         </>
     );
 
@@ -161,48 +160,69 @@ const Dashboard = (props: any) => {
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
                             <LayersControl position="topright">
-                                <LayersControl.Overlay checked name="Здания">
-                                    {/*<LayerGroup>*/}
-                                    {/*    {buildings.map(building =>*/}
+                                <LayersControl.Overlay checked name="Кварталы и здания">
+                                    <FeatureGroup>
+                                        {areas.map(area =>
 
-                                    {/*        <Polygon*/}
-                                    {/*            pathOptions={selectedBuilding?.id == building.id ? purpleOptions : fillBlueOptions}*/}
-                                    {/*            key={building.id}*/}
-                                    {/*            positions={building.polygonCoordinates.map(x => [x.x, x.y])}*/}
-                                    {/*            eventHandlers={{*/}
-                                    {/*                click: () => {*/}
-                                    {/*                    setSelectedBuilding(building);*/}
-                                    {/*                }*/}
-                                    {/*            }}>*/}
-                                    {/*            ffg*/}
-                                    {/*        </Polygon>)*/}
-                                    {/*    }*/}
+                                            <Polygon pathOptions={fillOrangeOptions}
+                                                     key={area.id}
+                                                     positions={area.geometryPoints.map(x => [x.x, x.y])}
+                                                     eventHandlers={{
+                                                         click: () => {
+                                                             setSelectedEntity(area);
+
+                                                             toast.current.show({
+                                                                 severity: 'error',
+                                                                 summary: 'Операция выполнена',
+                                                                 detail: 'Список городов успешно загружен',
+
+                                                                 life: 3000
+                                                             })
+                                                         }
+                                                     }}/>
+                                        )
+                                        }
+
+                                        {buildings.map(building =>
+
+                                            <Polygon
+                                                pathOptions={fillBlueOptions}
+                                                key={building.id}
+                                                positions={building.geometryPoints.map(x => [x.x, x.y])}
+                                                eventHandlers={{
+                                                    click: () => {
+                                                        setSelectedEntity(building);
+
+                                                        toast.current.show({
+                                                            severity: 'success',
+                                                            summary: 'Операция выполнена',
+                                                            detail: 'Список городов успешно загружен',
+
+                                                            life: 3000
+                                                        })
+                                                    }
+                                                }}>
+                                            </Polygon>)
+                                        }
+                                    </FeatureGroup>
+
+                                    {/*<LayerGroup>*/}
+                                    {/*    */}
                                     {/*</LayerGroup>*/}
                                 </LayersControl.Overlay>
-                                <LayersControl.Overlay name="Жилые районы">
-                                    <LayerGroup>
-                                        {areas.map(area =>
-                                            <div style={{zIndex: 1001}}>
-                                                <Polygon pathOptions={fillOrangeOptions}
-                                                          key={area.id}
-                                                          positions={area.geometryPoints.map(x => [x.x, x.y])}/>
-                                            </div>
-                                        )
-                                        }
-                                    </LayerGroup>
-                                </LayersControl.Overlay>
-                                <LayersControl.Overlay checked name="Теплотрассы">
-                                    <LayerGroup>
-                                        {pipes.map(pipe =>
-                                            <div style={{zIndex: 1001}}>
-                                                <Polyline pathOptions={limeOptions}
-                                                          positions={pipe.points.map(x => [x.y, x.x])}/>
 
-                                            </div>
-                                        )
-                                        }
-                                    </LayerGroup>
-                                </LayersControl.Overlay>
+                                {/*<LayersControl.Overlay checked name="Теплотрассы">*/}
+                                {/*    <LayerGroup>*/}
+                                {/*        {pipes.map(pipe =>*/}
+                                {/*            <div style={{zIndex: 1001}}>*/}
+                                {/*                <Polyline pathOptions={limeOptions}*/}
+                                {/*                          positions={pipe.points.map(x => [x.y, x.x])}/>*/}
+
+                                {/*            </div>*/}
+                                {/*        )*/}
+                                {/*        }*/}
+                                {/*    </LayerGroup>*/}
+                                {/*</LayersControl.Overlay>*/}
 
                                 <LayersControl.Overlay checked name="Теплоподстанции">
                                     {/*<LayerGroup>*/}
