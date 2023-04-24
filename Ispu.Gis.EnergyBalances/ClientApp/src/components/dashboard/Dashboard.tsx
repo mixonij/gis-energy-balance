@@ -1,30 +1,20 @@
-import React, {MutableRefObject, Ref, useCallback, useEffect, useRef, useState} from 'react';
-import {
-    FeatureGroup,
-    LayerGroup,
-    LayersControl,
-    MapContainer,
-    Marker,
-    Polygon,
-    Polyline,
-    TileLayer
-} from 'react-leaflet';
+import React, {MutableRefObject, useCallback, useEffect, useRef, useState} from 'react';
+import {FeatureGroup, LayerGroup, LayersControl, MapContainer, Polygon, Polyline, TileLayer} from 'react-leaflet';
 import {useGeolocated} from "react-geolocated";
 import "./style.css"
 import {
     Building,
     City,
     CityDistrict,
-    GeoDataService, HeatingPipe,
-    IGeoDataService,
-    Pipe
+    GeoDataService,
+    HeatingPipe,
+    HeatingStation,
+    IGeoDataService
 } from "../../app/@shared/g";
 import MapController from "../map/MapController";
 import {TabPanel, TabView} from "primereact/tabview";
 import {Dropdown} from "primereact/dropdown";
 import {Toolbar} from 'primereact/toolbar';
-import {Button} from 'primereact/button';
-import {SplitButton} from 'primereact/splitbutton';
 import {Toast} from 'primereact/toast';
 import {Badge} from "primereact/badge";
 import L from "leaflet";
@@ -49,6 +39,7 @@ const Dashboard = (props: any) => {
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<CityDistrict | Building | null>(null);
     const [heatingPipes, setHeatingPipes] = useState<Array<HeatingPipe>>([]);
+    const [heatingStations, setHeatingStations] = useState<Array<HeatingStation>>([]);
 
     const [, setCurrentZoom] = useState<number>(0);
 
@@ -120,16 +111,20 @@ const Dashboard = (props: any) => {
     const fillBlueOptions = {fillColor: 'blue'}
     const fillOrangeOptions = {color: 'red', fillColor: 'orange'}
     const purpleOptions = {fillColor: 'red'}
-    const limeOptions = {color: 'black'}
+    const blackOptions = {color: 'black'}
+
+    const limeOptions = {color: 'lime'}
 
     const leftContents = (
         <>
             <Dropdown className="m-2" value={selectedCity} options={cities} showClear onChange={onCityChange}
                       optionLabel="nativeName" placeholder="Выберите город"/>
 
-            <Badge className="m-2" value={selectedEntity && "buildings" in selectedEntity ? 1 : areas.length} size="large"
+            <Badge className="m-2" value={selectedEntity && "buildings" in selectedEntity ? 1 : areas.length}
+                   size="large"
                    severity="warning"/>
-            <Badge className="m-2" value={selectedEntity && "buildings" in selectedEntity ? selectedEntity.buildings.length : buildings.length}
+            <Badge className="m-2"
+                   value={selectedEntity && "buildings" in selectedEntity ? selectedEntity.buildings.length : buildings.length}
                    size="large" severity="success"/>
         </>
     );
@@ -141,8 +136,8 @@ const Dashboard = (props: any) => {
                 <div className="card mb-0"><Toolbar left={leftContents}/></div>
 
             </div>
-            <div className="col-10">
-                <div className="card mb-0" style={{height: "70vh"}}>
+            <div className="col-9">
+                <div className="card mb-0" style={{height: "90vh"}}>
                     {!isGeolocationAvailable ? (
                         <div>Браузер не поддерживает геолокацию</div>
                     ) : !isGeolocationEnabled ? (
@@ -214,24 +209,23 @@ const Dashboard = (props: any) => {
                                 <LayersControl.Overlay checked name="Теплотрассы">
                                     <LayerGroup>
                                         {heatingPipes.map(pipe =>
-                                                <Polyline pathOptions={limeOptions}
-                                                          positions={pipe.points.map(x => [x.x, x.y])}/>
+                                            <Polyline pathOptions={blackOptions}
+                                                      positions={pipe.points.map(x => [x.x, x.y])}/>
                                         )
                                         }
                                     </LayerGroup>
                                 </LayersControl.Overlay>
 
                                 <LayersControl.Overlay checked name="Теплоподстанции">
-                                    {/*<LayerGroup>*/}
-                                    {/*    {heatingStations.map(heatingStation =>*/}
-                                    {/*        <div style={{zIndex: 1001}}>*/}
-                                    {/*            <Marker*/}
-                                    {/*                position={[heatingStation.coords.x, heatingStation.coords.y]}/>*/}
-
-                                    {/*        </div>*/}
-                                    {/*    )*/}
-                                    {/*    }*/}
-                                    {/*</LayerGroup>*/}
+                                    <LayerGroup>
+                                        {heatingStations.map(heatingStation =>
+                                            <Polygon
+                                                pathOptions={limeOptions}
+                                                key={heatingStation.id}
+                                                positions={heatingStation.points.map(x => [x.x, x.y])}/>
+                                        )
+                                        }
+                                    </LayerGroup>
                                 </LayersControl.Overlay>
                             </LayersControl>
                             <MapController city={selectedCity} setCurrentZoom={setCurrentZoom}/>
@@ -239,21 +233,9 @@ const Dashboard = (props: any) => {
                 </div>
             </div>
 
-            <div className="col-2">
-                <div className="card mb-0" style={{height: "70vh"}}></div>
-            </div>
-            <div className="col-12">
-                <div className="card">
-                    <TabView>
-                        {/*<TabPanel header="Информация о здании">*/}
-                        {/*    <p>Год постройки здания - {selectedBuildingInfo?.builtYear}</p>*/}
-                        {/*    <p>Число жителей здания - {selectedBuildingInfo?.residentsCount}</p>*/}
-                        {/*    <p>Общая жилая площадь здания - {selectedBuildingInfo?.area}</p>*/}
-                        {/*</TabPanel>*/}
-                        <TabPanel header="Расчет способа подключения здания">
-                            {/*<ConnectionTable selectedEnergyBalance={selectedEnergyBalance}/>*/}
-                        </TabPanel>
-                    </TabView>
+            <div className="col-3">
+                <div className="card mb-0" style={{height: "90vh"}}>
+                    <Dropdown emptyMessage="Опции не найдены"/>
                 </div>
             </div>
         </div>);

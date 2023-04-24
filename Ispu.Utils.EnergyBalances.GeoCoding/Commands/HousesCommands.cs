@@ -1,3 +1,4 @@
+using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Ispu.Utils.EnergyBalances.GeoCoding.Context;
 using Ispu.Utils.EnergyBalances.GeoCoding.Databases;
@@ -112,6 +113,8 @@ public class HousesCommands
 
         await dbContext.HeatingStations.AddAsync(stationEntity);
         await dbContext.SaveChangesAsync();
+        
+        var pipes = GetPipes(dbContext, dbContext.HeatingStations.First().Geometry);
 
         // var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
         //     "Server=localhost;Port=5433;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
@@ -211,6 +214,15 @@ public class HousesCommands
 
         //
         return await Task.FromResult(1);
+    }
+
+    private static List<HeatingPipe> GetPipes(CityEnergyModelingContext cityEnergyModelingContext,
+        Polygon stationEntityGeometry)
+    {
+        var pipesConnectedToHeating =
+            cityEnergyModelingContext.HeatingPipes.Where(x => stationEntityGeometry.Intersects(x.Geometry)).ToList();
+
+        return pipesConnectedToHeating;
     }
 
     private static Polygon GetGeometry(CompleteWay completeWay)

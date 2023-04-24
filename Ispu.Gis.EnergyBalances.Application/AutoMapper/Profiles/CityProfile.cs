@@ -31,5 +31,9 @@ public class CityProfile : Profile
         CreateMap<HeatingPipe, Domain.Entities.HeatingPipe>().ForMember(x => x.Points,
             expression =>
                 expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
+        
+        CreateMap<HeatingStation, Domain.Entities.HeatingStation>().ForMember(x => x.Points,
+            expression =>
+                expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
     }
 }

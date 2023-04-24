@@ -42,11 +42,11 @@ public class GeoDataController : ControllerBase
             .ToListAsync();
         return districts;
     }
-    
+
     [HttpGet("[action]")]
     public Task<List<HeatingPipe>> GetPipes()
     {
-        return _newDb.HeatingPipes.Select(x=>_mapper.Map<HeatingPipe>(x)).ToListAsync();
+        return _newDb.HeatingPipes.Select(x => _mapper.Map<HeatingPipe>(x)).ToListAsync();
     }
 
     // [HttpGet("[action]/{buildingId}")]
@@ -85,9 +85,9 @@ public class GeoDataController : ControllerBase
         return new List<Pipe>();
     }
 
-    // [HttpGet("[action]")]
-    // public Task<List<HeatingStation>> GetHeatingStations()
-    // {
-    //     return _db.HeatingStations.ToListAsync();
-    // }
+    [HttpGet("[action]")]
+    public Task<List<HeatingStation>> GetHeatingStations()
+    {
+        return _newDb.HeatingStations.Select(x => _mapper.Map<HeatingStation>(x)).ToListAsync();
+    }
 }
