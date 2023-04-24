@@ -1,5 +1,3 @@
-using Ispu.Gis.EnergyBalances.Application.Storages;
-
 namespace Ispu.Gis.EnergyBalances;
 
 /// <summary>
@@ -17,9 +15,6 @@ public static class ConfigureServices
         // Добавляем контроллеры
         services.AddControllersWithViews();
 
-        // Добавляем сервис труб
-        services.AddSingleton<IPipesStorage, PipesStorage>();
-        
         // Сваггер
         services.AddSwaggerDocument(settings =>
         {

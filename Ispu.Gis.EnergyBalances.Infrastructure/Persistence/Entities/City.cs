@@ -48,7 +48,7 @@ public class City
     public List<Building> Buildings { get; set; } = new();
 
     /// <summary>
-    /// 
+    /// Тепловые станции
     /// </summary>
-    public ICollection<HeatingStation> HeatingStations { get; set; } = new List<HeatingStation>();
+    public List<HeatingStation> HeatingStations { get; set; } = new();
 }

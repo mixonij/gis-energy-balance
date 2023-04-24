@@ -19,11 +19,16 @@ public class CityProfile : Profile
                 expression => expression.MapFrom(s => new Point(s.NorthWestPoint.X, s.NorthWestPoint.Y)))
             .ForMember(x => x.SouthEastPoint,
                 expression => expression.MapFrom(s => new Point(s.SouthEastPoint.X, s.SouthEastPoint.Y)));
+        
         CreateMap<CityDistrict, Domain.Entities.CityDistrict>().ForMember(x => x.GeometryPoints,
             expression =>
                 expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
         
         CreateMap<Building, Domain.Entities.Building>().ForMember(x => x.GeometryPoints,
+            expression =>
+                expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
+        
+        CreateMap<HeatingPipe, Domain.Entities.HeatingPipe>().ForMember(x => x.Points,
             expression =>
                 expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
     }

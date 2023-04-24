@@ -14,7 +14,7 @@ using NpgsqlTypes;
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 {
     [DbContext(typeof(CityEnergyModelingContext))]
-    [Migration("20230423130352_Initial")]
+    [Migration("20230424123920_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -69,32 +69,50 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                     b.ToTable("buildings", (string)null);
                 });
 
-            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingsInfo", b =>
+            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingInfo", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
-                    b.Property<float>("Area")
-                        .HasColumnType("real");
+                    b.Property<double>("Area")
+                        .HasColumnType("double precision")
+                        .HasColumnName("residential_area")
+                        .HasColumnOrder(4);
 
                     b.Property<int>("BuildingId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("building_id")
+                        .HasColumnOrder(1);
 
                     b.Property<int?>("BuiltYear")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("built_year")
+                        .HasColumnOrder(2);
+
+                    b.Property<int>("RegistryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("registry_id")
+                        .HasColumnOrder(5);
 
                     b.Property<int>("ResidentsCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("residents_count")
+                        .HasColumnOrder(3);
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("building_information_pkey");
 
                     b.HasIndex("BuildingId")
                         .IsUnique();
 
-                    b.ToTable("BuildingsInfo");
+                    b.HasIndex(new[] { "Id" }, "IX_building_information_id");
+
+                    b.ToTable("building_information", (string)null);
                 });
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.City", b =>
@@ -180,36 +198,87 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .HasColumnName("geometry")
                         .HasColumnOrder(2);
 
+                    b.Property<int?>("HeatingStationId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id")
                         .HasName("areas_pkey");
 
                     b.HasIndex("CityId");
 
+                    b.HasIndex("HeatingStationId");
+
                     b.ToTable("city_districts", (string)null);
+                });
+
+            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingPipe", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("DObr")
+                        .HasColumnType("numeric")
+                        .HasColumnName("d_obr")
+                        .HasColumnOrder(2);
+
+                    b.Property<decimal>("DPod")
+                        .HasColumnType("numeric")
+                        .HasColumnName("d_pod")
+                        .HasColumnOrder(1);
+
+                    b.Property<MultiLineString>("Geometry")
+                        .IsRequired()
+                        .HasColumnType("geometry(MultiLineString,4326)")
+                        .HasColumnName("geometry")
+                        .HasColumnOrder(3);
+
+                    b.HasKey("Id")
+                        .HasName("heating_pipes_pkey");
+
+                    b.HasIndex(new[] { "Id" }, "IX_heating_pipes_id");
+
+                    b.ToTable("heating_pipes", (string)null);
                 });
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CityId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("city_id")
+                        .HasColumnOrder(2);
 
-                    b.Property<NpgsqlPoint>("Coords")
-                        .HasColumnType("point");
+                    b.Property<Polygon>("Geometry")
+                        .IsRequired()
+                        .HasColumnType("geometry(Polygon,4326)")
+                        .HasColumnName("geometry")
+                        .HasColumnOrder(3);
 
-                    b.Property<float>("NominalPower")
-                        .HasColumnType("real");
+                    b.Property<double>("NominalPower")
+                        .HasColumnType("double precision")
+                        .HasColumnName("nominal_power")
+                        .HasColumnOrder(1);
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("heating_stations_pkey");
 
                     b.HasIndex("CityId");
 
-                    b.ToTable("HeatingStation");
+                    b.HasIndex(new[] { "Id" }, "IX_heating_stations_id");
+
+                    b.ToTable("heating_stations", (string)null);
                 });
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building", b =>
@@ -227,11 +296,11 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                     b.Navigation("CityDistrict");
                 });
 
-            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingsInfo", b =>
+            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingInfo", b =>
                 {
                     b.HasOne("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building", "Building")
                         .WithOne("BuildingInfo")
-                        .HasForeignKey("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingsInfo", "BuildingId")
+                        .HasForeignKey("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.BuildingInfo", "BuildingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -246,7 +315,13 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", "HeatingStation")
+                        .WithMany("CityDistricts")
+                        .HasForeignKey("HeatingStationId");
+
                     b.Navigation("City");
+
+                    b.Navigation("HeatingStation");
                 });
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", b =>
@@ -262,8 +337,7 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.Building", b =>
                 {
-                    b.Navigation("BuildingInfo")
-                        .IsRequired();
+                    b.Navigation("BuildingInfo");
                 });
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.City", b =>
@@ -278,6 +352,11 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.CityDistrict", b =>
                 {
                     b.Navigation("Buildings");
+                });
+
+            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", b =>
+                {
+                    b.Navigation("CityDistricts");
                 });
 #pragma warning restore 612, 618
         }

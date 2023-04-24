@@ -41,5 +41,5 @@ public class Building
     /// <summary>
     /// Информация о здании
     /// </summary>
-    public BuildingsInfo BuildingInfo { get; set; } 
+    public BuildingInfo? BuildingInfo { get; set; } 
 }

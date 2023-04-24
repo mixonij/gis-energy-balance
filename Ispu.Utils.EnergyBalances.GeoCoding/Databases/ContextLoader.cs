@@ -1,5 +1,6 @@
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Ispu.Utils.EnergyBalances.GeoCoding.Databases;
 
@@ -17,11 +18,13 @@ public class ContextLoader
     {
         var options = new DbContextOptionsBuilder<CityEnergyModelingContext>()
             .UseNpgsql(connectionString, options => options.UseNetTopologySuite()).Options;
-        await using var dbContext = new CityEnergyModelingContext(options);
-        //await dbContext.Database.EnsureDeletedAsync();
+        var dbContext = new CityEnergyModelingContext(options);
+        await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.MigrateAsync();
         
+        await dbContext.Database.OpenConnectionAsync();
+        await ((NpgsqlConnection)dbContext.Database.GetDbConnection()).ReloadTypesAsync();
         
-        return new CityEnergyModelingContext(options);
+        return dbContext;
     }
 }

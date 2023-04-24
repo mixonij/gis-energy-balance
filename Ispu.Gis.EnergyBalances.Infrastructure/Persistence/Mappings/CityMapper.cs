@@ -67,6 +67,12 @@ public class CityMapper: IEntityTypeConfiguration<City>
             .WithOne(e => e.City)
             .HasForeignKey(e => e.CityId)
             .HasPrincipalKey(e => e.Id);
+        
+        // Отношение один ко многим для тепловых станций
+        builder.HasMany(e => e.HeatingStations)
+            .WithOne(e => e.City)
+            .HasForeignKey(e => e.CityId)
+            .HasPrincipalKey(e => e.Id);
 
         // Дефолтная строка с городом
         builder.HasData(new City

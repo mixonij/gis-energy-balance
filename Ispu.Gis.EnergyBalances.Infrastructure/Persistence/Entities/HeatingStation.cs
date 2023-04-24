@@ -1,16 +1,36 @@
-﻿using NpgsqlTypes;
+﻿using NetTopologySuite.Geometries;
 
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 
-public partial class HeatingStation
+public class HeatingStation
 {
+    /// <summary>
+    /// Идентификатор
+    /// </summary>
     public int Id { get; set; }
 
+    /// <summary>
+    /// Идентификатор города
+    /// </summary>
     public int CityId { get; set; }
 
-    public float NominalPower { get; set; }
+    /// <summary>
+    /// Номинальная мощность
+    /// </summary>
+    public double NominalPower { get; set; }
 
-    public NpgsqlPoint Coords { get; set; }
+    /// <summary>
+    /// Геометрия
+    /// </summary>
+    public Polygon Geometry { get; set; }
 
-    public virtual City City { get; set; } = null!;
+    /// <summary>
+    /// Город
+    /// </summary>
+    public City City { get; set; } = null!;
+
+    /// <summary>
+    /// Городские районы
+    /// </summary>
+    public List<CityDistrict> CityDistricts { get; set; } = new();
 }

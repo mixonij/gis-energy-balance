@@ -14,6 +14,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } fr
 export interface IGeoDataService {
     getCities(): Promise<City[] | null>;
     getAreas(cityId: number): Promise<CityDistrict[] | null>;
+    getPipes(): Promise<HeatingPipe[] | null>;
     getPipeGroups(): Promise<Pipe[] | null>;
 }
 
@@ -141,6 +142,61 @@ export class GeoDataService implements IGeoDataService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
         }
         return Promise.resolve<CityDistrict[] | null>(null as any);
+    }
+
+    getPipes(  cancelToken?: CancelToken | undefined): Promise<HeatingPipe[] | null> {
+        let url_ = this.baseUrl + "/api/geodata/GetPipes";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: AxiosRequestConfig = {
+            method: "GET",
+            url: url_,
+            headers: {
+                "Accept": "application/json"
+            },
+            cancelToken
+        };
+
+        return this.instance.request(options_).catch((_error: any) => {
+            if (isAxiosError(_error) && _error.response) {
+                return _error.response;
+            } else {
+                throw _error;
+            }
+        }).then((_response: AxiosResponse) => {
+            return this.processGetPipes(_response);
+        });
+    }
+
+    protected processGetPipes(response: AxiosResponse): Promise<HeatingPipe[] | null> {
+        const status = response.status;
+        let _headers: any = {};
+        if (response.headers && typeof response.headers === "object") {
+            for (let k in response.headers) {
+                if (response.headers.hasOwnProperty(k)) {
+                    _headers[k] = response.headers[k];
+                }
+            }
+        }
+        if (status === 200) {
+            const _responseText = response.data;
+            let result200: any = null;
+            let resultData200  = _responseText;
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(HeatingPipe.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return Promise.resolve<HeatingPipe[] | null>(result200);
+
+        } else if (status !== 200 && status !== 204) {
+            const _responseText = response.data;
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+        }
+        return Promise.resolve<HeatingPipe[] | null>(null as any);
     }
 
     getPipeGroups(  cancelToken?: CancelToken | undefined): Promise<Pipe[] | null> {
@@ -449,6 +505,65 @@ export interface IBuilding {
     v: number;
     id: number;
     geometryPoints: Point[];
+}
+
+export class HeatingPipe implements IHeatingPipe {
+    id!: number;
+    points!: Point[];
+    dPod!: number;
+    dObr!: number;
+
+    constructor(data?: IHeatingPipe) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+        if (!data) {
+            this.points = [];
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            if (Array.isArray(_data["points"])) {
+                this.points = [] as any;
+                for (let item of _data["points"])
+                    this.points!.push(Point.fromJS(item));
+            }
+            this.dPod = _data["dPod"];
+            this.dObr = _data["dObr"];
+        }
+    }
+
+    static fromJS(data: any): HeatingPipe {
+        data = typeof data === 'object' ? data : {};
+        let result = new HeatingPipe();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        if (Array.isArray(this.points)) {
+            data["points"] = [];
+            for (let item of this.points)
+                data["points"].push(item.toJSON());
+        }
+        data["dPod"] = this.dPod;
+        data["dObr"] = this.dObr;
+        return data;
+    }
+}
+
+export interface IHeatingPipe {
+    id: number;
+    points: Point[];
+    dPod: number;
+    dObr: number;
 }
 
 export class Pipe implements IPipe {

@@ -1,19 +1,13 @@
-using System.Globalization;
-using CsvHelper;
-using CsvHelper.Configuration;
-using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+using Ispu.Utils.EnergyBalances.GeoCoding.Context;
 using Ispu.Utils.EnergyBalances.GeoCoding.Databases;
 using Ispu.Utils.EnergyBalances.GeoCoding.Loaders;
 using Ispu.Utils.EnergyBalances.GeoCoding.Options;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
-using NpgsqlTypes;
 using OsmSharp;
 using OsmSharp.Complete;
-using OsmSharp.Streams;
 using Serilog;
-using House = Ispu.Utils.EnergyBalances.GeoCoding.Models.House;
 
 namespace Ispu.Utils.EnergyBalances.GeoCoding.Commands;
 
@@ -30,7 +24,9 @@ public class HousesCommands
         // Узлы OSM
         var osmNodes = PbfLoader.LoadData(housesOptions.PbfPath);
         Logger.Information("Загружено данных OSM: {OsmNodesCount}", osmNodes.Count);
-
+        
+        await using var pipesContext = new HeatingNetworkDbContext();
+        
         // Получаем контекст БД
         await using var dbContext = await ContextLoader.GetContextAsync(housesOptions.PgConnectionString);
 
@@ -63,7 +59,7 @@ public class HousesCommands
         var buildings = osmNodes.Where(x => x.Type == OsmGeoType.Way
                                             && x.Tags.Any(y => y.Key is "addr:street" or "addr:housenumber"))
             .OfType<CompleteWay>().ToList();
-        
+
         await dbContext.Buildings.AddRangeAsync(buildings.Select(GetGeometry).Select(geometry => new Building
         {
             Geometry = geometry
@@ -89,7 +85,19 @@ public class HousesCommands
 
         await dbContext.SaveChangesAsync();
 
+        foreach (var heatingPipe in pipesContext.Heatingnetworkivs.Select(x=> new HeatingPipe
+                 {
+                     DPod = x.Dpod!.Value,
+                     DObr = x.Dobr!.Value,
+                     Geometry = EF.Functions.Transform(x.WkbGeometry!, 4326)
+                 } ))
+        {
 
+            await dbContext.HeatingPipes.AddAsync(heatingPipe);
+        }
+        
+        await dbContext.SaveChangesAsync();
+        
         // var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
         //     "Server=localhost;Port=5433;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
         // await using var dbContext = new EnergyBalancesContext(options);
@@ -194,8 +202,9 @@ public class HousesCommands
     {
         var points = completeWay.Nodes;
 
-        var linearRing = new LinearRing(points.Select(x => new Coordinate(x.Longitude!.Value, x.Latitude!.Value)).ToArray());
-        
+        var linearRing =
+            new LinearRing(points.Select(x => new Coordinate(x.Longitude!.Value, x.Latitude!.Value)).ToArray());
+
         // List<LineString> lines = new();
         // for (var i = 0; i < points.Length; i++)
         // {
@@ -218,7 +227,7 @@ public class HousesCommands
         //
         //     lines.Add(new LineString(coordinates));
         // }
-        
+
 
         var geometry = new Polygon(linearRing);
         return geometry;

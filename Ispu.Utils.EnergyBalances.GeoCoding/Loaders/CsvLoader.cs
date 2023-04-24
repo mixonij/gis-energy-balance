@@ -1,7 +1,7 @@
 using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
-using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+using Ispu.Utils.EnergyBalances.GeoCoding.Models;
 
 namespace Ispu.Utils.EnergyBalances.GeoCoding.Loaders;
 

@@ -15,7 +15,7 @@ import {
     Building,
     City,
     CityDistrict,
-    GeoDataService,
+    GeoDataService, HeatingPipe,
     IGeoDataService,
     Pipe
 } from "../../app/@shared/g";
@@ -27,6 +27,7 @@ import {Button} from 'primereact/button';
 import {SplitButton} from 'primereact/splitbutton';
 import {Toast} from 'primereact/toast';
 import {Badge} from "primereact/badge";
+import L from "leaflet";
 
 
 const Dashboard = (props: any) => {
@@ -40,9 +41,6 @@ const Dashboard = (props: any) => {
 
     const toast = useRef() as MutableRefObject<Toast>;
 
-    // @ts-ignore
-    const buildingLayer = useRef() as MutableRefObject<FeatureGroup<any>>;
-
 
     const [geoService] = useState<IGeoDataService>(new GeoDataService())
     const [buildings, setBuildings] = useState<Array<Building>>([]);
@@ -50,6 +48,7 @@ const Dashboard = (props: any) => {
     const [cities, setCities] = useState<Array<City>>([]);
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [selectedEntity, setSelectedEntity] = useState<CityDistrict | Building | null>(null);
+    const [heatingPipes, setHeatingPipes] = useState<Array<HeatingPipe>>([]);
 
     const [, setCurrentZoom] = useState<number>(0);
 
@@ -72,8 +71,8 @@ const Dashboard = (props: any) => {
         }
         setBuildings(buildings);
 
-        // const pipes = await geoService.getPipeGroups();
-        // setPipes(pipes ?? []);
+        const pipes = await geoService.getPipes();
+        setHeatingPipes(pipes ?? []);
 
         // const heatingStations = await geoService.getHeatingStations();
         // setHeatingStations(heatingStations ?? []);
@@ -121,7 +120,7 @@ const Dashboard = (props: any) => {
     const fillBlueOptions = {fillColor: 'blue'}
     const fillOrangeOptions = {color: 'red', fillColor: 'orange'}
     const purpleOptions = {fillColor: 'red'}
-    const limeOptions = {color: 'lime'}
+    const limeOptions = {color: 'black'}
 
     const leftContents = (
         <>
@@ -150,6 +149,7 @@ const Dashboard = (props: any) => {
                         <div>Геолокация не включена</div>
                     ) : coords ? (
                         <MapContainer
+                            renderer={L.canvas()}
                             attributionControl={true}
                             center={[coords?.latitude!, coords?.longitude!]}
                             zoom={11}
@@ -211,18 +211,15 @@ const Dashboard = (props: any) => {
                                     {/*</LayerGroup>*/}
                                 </LayersControl.Overlay>
 
-                                {/*<LayersControl.Overlay checked name="Теплотрассы">*/}
-                                {/*    <LayerGroup>*/}
-                                {/*        {pipes.map(pipe =>*/}
-                                {/*            <div style={{zIndex: 1001}}>*/}
-                                {/*                <Polyline pathOptions={limeOptions}*/}
-                                {/*                          positions={pipe.points.map(x => [x.y, x.x])}/>*/}
-
-                                {/*            </div>*/}
-                                {/*        )*/}
-                                {/*        }*/}
-                                {/*    </LayerGroup>*/}
-                                {/*</LayersControl.Overlay>*/}
+                                <LayersControl.Overlay checked name="Теплотрассы">
+                                    <LayerGroup>
+                                        {heatingPipes.map(pipe =>
+                                                <Polyline pathOptions={limeOptions}
+                                                          positions={pipe.points.map(x => [x.x, x.y])}/>
+                                        )
+                                        }
+                                    </LayerGroup>
+                                </LayersControl.Overlay>
 
                                 <LayersControl.Overlay checked name="Теплоподстанции">
                                     {/*<LayerGroup>*/}

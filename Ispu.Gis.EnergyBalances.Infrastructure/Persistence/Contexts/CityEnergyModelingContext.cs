@@ -31,6 +31,17 @@ public class CityEnergyModelingContext: DbContext
     /// Здания
     /// </summary>
     public virtual DbSet<Building> Buildings { get; set; } = null!;
+    
+    /// <summary>
+    /// Тепловые трубы
+    /// </summary>
+    public virtual DbSet<HeatingPipe> HeatingPipes { get; set; } = null!;
+    
+    /// <summary>
+    /// Тепловые станции
+    /// </summary>
+    public virtual DbSet<HeatingStation> HeatingStations { get; set; } = null!;
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +54,9 @@ public class CityEnergyModelingContext: DbContext
         modelBuilder.ApplyConfiguration(new CityMapper());
         modelBuilder.ApplyConfiguration(new CityDistrictMapper());
         modelBuilder.ApplyConfiguration(new BuildingMapper());
+        modelBuilder.ApplyConfiguration(new BuildingInfoMapper());
+        modelBuilder.ApplyConfiguration(new HeatingPipeMapper());
+        modelBuilder.ApplyConfiguration(new HeatingStationMapper());
         
         base.OnModelCreating(modelBuilder);
     }

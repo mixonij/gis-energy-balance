@@ -1,28 +1,28 @@
-﻿using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
+using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Mappings;
 
 /// <summary>
-/// Маппер зданий
+/// Маппер тепловой станции
 /// </summary>
-public class BuildingMapper: IEntityTypeConfiguration<Building>
+public class HeatingStationMapper: IEntityTypeConfiguration<HeatingStation>
 {
     /// <summary>
     /// Конфигурация
     /// </summary>
     /// <param name="builder">Конструктор сущностей</param>
-    public void Configure(EntityTypeBuilder<Building> builder)
+    public void Configure(EntityTypeBuilder<HeatingStation> builder)
     {
         // Первичный ключ
-        builder.HasKey(e => e.Id).HasName("buildings_pkey");
+        builder.HasKey(e => e.Id).HasName("heating_stations_pkey");
 
         // Таблица
-        builder.ToTable("buildings");
+        builder.ToTable("heating_stations");
 
         // Индекс
-        builder.HasIndex(e => e.Id, "IX_buildings_id");
+        builder.HasIndex(e => e.Id, "IX_heating_stations_id");
 
         // Идентификатор
         builder.Property(e => e.Id)
@@ -31,14 +31,14 @@ public class BuildingMapper: IEntityTypeConfiguration<Building>
             .HasColumnOrder(0)
             .IsRequired();
         
+        // Номинальная мощность
+        builder.Property(e => e.NominalPower)
+            .HasColumnName("nominal_power")
+            .HasColumnOrder(1);
+        
         // Идентификатор города
         builder.Property(e => e.CityId)
             .HasColumnName("city_id")
-            .HasColumnOrder(1);
-        
-        // Идентификатор района
-        builder.Property(e => e.DistrictId)
-            .HasColumnName("district_id")
             .HasColumnOrder(2);
         
         // Геометрия
@@ -48,10 +48,10 @@ public class BuildingMapper: IEntityTypeConfiguration<Building>
             .HasColumnOrder(3)
             .IsRequired();
         
-        // Отношение один к Одному для информации о здании
-        builder.HasOne(e => e.BuildingInfo)
-            .WithOne(e => e.Building)
-            .HasForeignKey<BuildingInfo>(e => e.BuildingId)
-            .HasPrincipalKey<Building>(e => e.Id);
+        // Отношение один ко многим для городских районов
+        builder.HasMany(e => e.CityDistricts)
+            .WithOne(e => e.HeatingStation)
+            .HasForeignKey(e => e.HeatingStationId)
+            .HasPrincipalKey(e => e.Id);
     }
 }

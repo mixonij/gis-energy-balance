@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Ispu.Gis.EnergyBalances.Application.Models;
-using Ispu.Gis.EnergyBalances.Application.Storages;
 using Ispu.Gis.EnergyBalances.Domain.Entities;
 using Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Contexts;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +11,11 @@ namespace Ispu.Gis.EnergyBalances.Controlles;
 [Route("api/geodata")]
 public class GeoDataController : ControllerBase
 {
-    //private readonly EnergyBalancesContext _db;
-    private readonly IPipesStorage _pipesStorage;
     private readonly CityEnergyModelingContext _newDb;
     private readonly IMapper _mapper;
 
-    public GeoDataController(IPipesStorage pipesStorage, CityEnergyModelingContext newDb, IMapper mapper)
+    public GeoDataController(CityEnergyModelingContext newDb, IMapper mapper)
     {
-        //_db = db;
-        _pipesStorage = pipesStorage;
         _newDb = newDb;
         _mapper = mapper;
     }
@@ -47,6 +42,12 @@ public class GeoDataController : ControllerBase
             .ToListAsync();
         return districts;
     }
+    
+    [HttpGet("[action]")]
+    public Task<List<HeatingPipe>> GetPipes()
+    {
+        return _newDb.HeatingPipes.Select(x=>_mapper.Map<HeatingPipe>(x)).ToListAsync();
+    }
 
     // [HttpGet("[action]/{buildingId}")]
     // public Task<BuildingsInfo?> GetBuildingInfo(int buildingId)
@@ -72,14 +73,16 @@ public class GeoDataController : ControllerBase
     [HttpGet("[action]")]
     public async Task<List<Pipe>> GetPipeGroups()
     {
-        return (await _pipesStorage.GetPipes()).Select(x => new Pipe
-        {
-            Id = x.OgcFid,
-            DOut = x.Dobr,
-            DIn = x.Dpod,
-            Length = x.ShapeLeng,
-            Points = x.WkbGeometry!.Coordinates.Select(t => new GeographyPoint(t)).ToList()
-        }).ToList();
+        // return (await _pipesStorage.GetPipes()).Select(x => new Pipe
+        // {
+        //     Id = x.OgcFid,
+        //     DOut = x.Dobr,
+        //     DIn = x.Dpod,
+        //     Length = x.ShapeLeng,
+        //     Points = x.WkbGeometry!.Coordinates.Select(t => new GeographyPoint(t)).ToList()
+        // }).ToList();
+
+        return new List<Pipe>();
     }
 
     // [HttpGet("[action]")]
