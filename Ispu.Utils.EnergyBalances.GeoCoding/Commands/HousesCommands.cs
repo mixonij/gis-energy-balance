@@ -97,7 +97,22 @@ public class HousesCommands
         }
         
         await dbContext.SaveChangesAsync();
+
+        if (osmNodes.FirstOrDefault(x => x.Id == 168092602) is not CompleteWay ispuHeatingStation)
+        {
+            return await Task.FromResult(1);
+        }
         
+        var stationEntity = new HeatingStation
+        {
+            CityId = city.Id,
+            Geometry = GetGeometry(ispuHeatingStation),
+            NominalPower = 15.448
+        };
+
+        await dbContext.HeatingStations.AddAsync(stationEntity);
+        await dbContext.SaveChangesAsync();
+
         // var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
         //     "Server=localhost;Port=5433;Database=energy_balances;UserId=postgres;Password=postgres;").Options;
         // await using var dbContext = new EnergyBalancesContext(options);

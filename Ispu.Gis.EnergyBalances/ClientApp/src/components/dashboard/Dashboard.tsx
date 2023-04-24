@@ -74,8 +74,8 @@ const Dashboard = (props: any) => {
         const pipes = await geoService.getPipes();
         setHeatingPipes(pipes ?? []);
 
-        // const heatingStations = await geoService.getHeatingStations();
-        // setHeatingStations(heatingStations ?? []);
+        const heatingStations = await geoService.getHeatingStations();
+        setHeatingStations(heatingStations ?? []);
     }, [geoService, selectedCity]);
 
     const loadBuildingInfo = useCallback(async () => {
