@@ -41,15 +41,20 @@ public class HeatingStationMapper: IEntityTypeConfiguration<HeatingStation>
             .HasColumnName("city_id")
             .HasColumnOrder(2);
         
+        // Идентификатор города
+        builder.Property(e => e.Name)
+            .HasColumnName("name")
+            .HasColumnOrder(3);
+        
         // Геометрия
         builder.Property(e => e.Geometry)
             .HasColumnType("geometry(Polygon,4326)")
             .HasColumnName("geometry")
-            .HasColumnOrder(3)
+            .HasColumnOrder(4)
             .IsRequired();
         
-        // Отношение один ко многим для городских районов
-        builder.HasMany(e => e.CityDistricts)
+        // Отношение один ко многим для тепловых труб
+        builder.HasMany(e => e.HeatingPipes)
             .WithOne(e => e.HeatingStation)
             .HasForeignKey(e => e.HeatingStationId)
             .HasPrincipalKey(e => e.Id);

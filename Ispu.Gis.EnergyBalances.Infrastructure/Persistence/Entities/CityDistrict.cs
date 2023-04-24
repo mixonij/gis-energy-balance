@@ -16,11 +16,6 @@ public class CityDistrict
     /// Идентификатор города
     /// </summary>
     public int CityId { get; set; }
-    
-    /// <summary>
-    /// Идентификатор тепловой станции
-    /// </summary>
-    public int? HeatingStationId { get; set; }
 
     /// <summary>
     /// Геометрия
@@ -31,11 +26,6 @@ public class CityDistrict
     /// Город
     /// </summary>
     public City? City { get; set; }
-    
-    /// <summary>
-    /// Тепловая станция
-    /// </summary>
-    public HeatingStation? HeatingStation { get; set; }
 
     /// <summary>
     /// Здания района

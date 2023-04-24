@@ -3,12 +3,14 @@ namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 /// <summary>
 /// Сущность городского района
 /// </summary>
-public class CityDistrict: IEntity
+public class CityDistrict: IPolygonEntity
 {
     /// <summary>
     /// Идентификатор района
     /// </summary>
     public int Id { get; set; }
+
+    public Point Center { get; set; }
 
     /// <summary>
     /// Идентификатор города

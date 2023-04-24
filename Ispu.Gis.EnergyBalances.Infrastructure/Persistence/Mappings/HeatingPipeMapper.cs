@@ -41,11 +41,16 @@ public class HeatingPipeMapper: IEntityTypeConfiguration<HeatingPipe>
             .HasColumnName("d_obr")
             .HasColumnOrder(2);
         
+        // Идентификатор тепловой станции
+        builder.Property(e => e.HeatingStationId)
+            .HasColumnName("heating_station_id")
+            .HasColumnOrder(3);
+        
         // Геометрия
         builder.Property(e => e.Geometry)
             .HasColumnType("geometry(MultiLineString,4326)")
             .HasColumnName("geometry")
-            .HasColumnOrder(3)
+            .HasColumnOrder(4)
             .IsRequired();
     }
 }

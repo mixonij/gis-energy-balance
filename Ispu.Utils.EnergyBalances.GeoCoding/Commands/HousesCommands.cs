@@ -25,9 +25,9 @@ public class HousesCommands
         // Узлы OSM
         var osmNodes = PbfLoader.LoadData(housesOptions.PbfPath);
         Logger.Information("Загружено данных OSM: {OsmNodesCount}", osmNodes.Count);
-        
+
         await using var pipesContext = new HeatingNetworkDbContext();
-        
+
         // Получаем контекст БД
         await using var dbContext = await ContextLoader.GetContextAsync(housesOptions.PgConnectionString);
 
@@ -86,34 +86,78 @@ public class HousesCommands
 
         await dbContext.SaveChangesAsync();
 
-        foreach (var heatingPipe in pipesContext.Heatingnetworkivs.Select(x=> new HeatingPipe
+        foreach (var heatingPipe in pipesContext.Heatingnetworkivs.Select(x => new HeatingPipe
                  {
                      DPod = x.Dpod!.Value,
                      DObr = x.Dobr!.Value,
                      Geometry = EF.Functions.Transform(x.WkbGeometry!, 4326)
-                 } ))
+                 }))
         {
-
             await dbContext.HeatingPipes.AddAsync(heatingPipe);
         }
-        
+
         await dbContext.SaveChangesAsync();
 
         if (osmNodes.FirstOrDefault(x => x.Id == 168092602) is not CompleteWay ispuHeatingStation)
         {
             return await Task.FromResult(1);
         }
-        
+
         var stationEntity = new HeatingStation
         {
             CityId = city.Id,
             Geometry = GetGeometry(ispuHeatingStation),
-            NominalPower = 15.448
+            NominalPower = 15.448,
+            Name = "Котельная ИГЭУ"
         };
 
         await dbContext.HeatingStations.AddAsync(stationEntity);
-        await dbContext.SaveChangesAsync();
+
+        var stations = new List<(long OsmId, double Power, string Name)>
+        {
+            (109790361, 1.92, "Котельная №1,с.Богородское, ул.Б.Клинцевская, 2а"),
+            (534327860, 0.86, "Котельная №2, м.Харинка, ул.Окуловой, 77"),
+            (109793284, 0.32, "Котельная №3, м.Лесное, ул.Хвойная, 2"),
+            (109793272, 0.32, "Котельная №17, м. Лесное, ул. 5-я Снежная, 3"),
+            (681490591, 0.31, "Котельная №10, ул. Детская, 2/7"),
+            (124158272, 0.74, "Котельная №18, ул.Свободы,1"),
+            (109306337, 5.14, "Котельная №19, ул.Шувандиной,111"),
+            (5318038222, 0.62, "Котельная №20 (паровая), ул.Любимова,5"),
+            (565062254, 2.11, "Котельная №23,  ул.Садовского, 7"),
+            (109559753, 0.48, "Котельная №24,  ул.Носова, 49"),
+            (211102792, 0.107, "Котельная №30,  ул.Володиной, 7"),
+            (135733884, 0, "Котельная №31,  ул.Лебедева-Кумача,10-б"),
+            (87793352, 0, "Котельная №33,  ул.Авдотьинская, 20а"),
+            (481991073, 1.01, "Котельная №35,  ул.Маршала Жаворонкова,40"),
+            (702793799, 15.26, "Котельная №37,  ул.Полка Нормандия Неман, 103"),
+            (534330829, 0.09, "Котельная №39,  м.Горино, 2-я Ягодная,31"),
+            (112049837, 0.34, "Котельная №41,  ул.Сахарова, 56 (строение 1)"),
+            (120642587, 0.10, "Котельная №43,  ул. 9-я Линия,д.1/6"),
+            (427522880, 0.25, "Котельная №45,  ул. Красных Зорь, 28"),
+            (438273974, 0, "Котельная №46,  ул. Красных Зорь, 50")
+        };
+
+        foreach (var station in stations)
+        {
+            if (osmNodes.FirstOrDefault(x => x.Id == station.OsmId) is not CompleteWay osmHeatingStation)
+            {
+                continue;
+            }
+            
+            var osmStationEntity = new HeatingStation
+            {
+                CityId = city.Id,
+                Geometry = GetGeometry(osmHeatingStation),
+                NominalPower = station.Power,
+                Name = station.Name
+            };
         
+            await dbContext.HeatingStations.AddAsync(osmStationEntity);
+        }
+
+
+        await dbContext.SaveChangesAsync();
+
         var pipes = GetPipes(dbContext, dbContext.HeatingStations.First().Geometry);
 
         // var options = new DbContextOptionsBuilder<EnergyBalancesContext>().UseNpgsql(
@@ -219,6 +263,7 @@ public class HousesCommands
     private static List<HeatingPipe> GetPipes(CityEnergyModelingContext cityEnergyModelingContext,
         Polygon stationEntityGeometry)
     {
+        stationEntityGeometry.SRID = 4326;
         var pipesConnectedToHeating =
             cityEnergyModelingContext.HeatingPipes.Where(x => stationEntityGeometry.Intersects(x.Geometry)).ToList();
 

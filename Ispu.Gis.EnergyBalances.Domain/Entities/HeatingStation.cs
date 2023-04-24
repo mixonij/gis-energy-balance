@@ -1,11 +1,16 @@
 namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 
-public class HeatingStation : IEntity
+public class HeatingStation : IPolygonEntity
 {
     /// <summary>
     /// Идентификатор
     /// </summary>
     public int Id { get; set; }
+
+    /// <summary>
+    /// Центр
+    /// </summary>
+    public Point Center { get; set; }
 
     /// <summary>
     /// Идентификатор города
@@ -16,9 +21,14 @@ public class HeatingStation : IEntity
     /// Номинальная мощность
     /// </summary>
     public double NominalPower { get; set; }
+    
+    /// <summary>
+    /// Наименование
+    /// </summary>
+    public string Name { get; set; }
 
     /// <summary>
     /// Геометрия
     /// </summary>
-    public Point[] Points { get; set; } = Array.Empty<Point>();
+    public Point[] GeometryPoints { get; set; } = Array.Empty<Point>();
 }

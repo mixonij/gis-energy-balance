@@ -195,15 +195,10 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .HasColumnName("geometry")
                         .HasColumnOrder(2);
 
-                    b.Property<int?>("HeatingStationId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id")
                         .HasName("areas_pkey");
 
                     b.HasIndex("CityId");
-
-                    b.HasIndex("HeatingStationId");
 
                     b.ToTable("city_districts", (string)null);
                 });
@@ -232,10 +227,17 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("geometry(MultiLineString,4326)")
                         .HasColumnName("geometry")
+                        .HasColumnOrder(4);
+
+                    b.Property<int?>("HeatingStationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("heating_station_id")
                         .HasColumnOrder(3);
 
                     b.HasKey("Id")
                         .HasName("heating_pipes_pkey");
+
+                    b.HasIndex("HeatingStationId");
 
                     b.HasIndex(new[] { "Id" }, "IX_heating_pipes_id");
 
@@ -261,6 +263,12 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("geometry(Polygon,4326)")
                         .HasColumnName("geometry")
+                        .HasColumnOrder(4);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name")
                         .HasColumnOrder(3);
 
                     b.Property<double>("NominalPower")
@@ -312,11 +320,14 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", "HeatingStation")
-                        .WithMany("CityDistricts")
-                        .HasForeignKey("HeatingStationId");
-
                     b.Navigation("City");
+                });
+
+            modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingPipe", b =>
+                {
+                    b.HasOne("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", "HeatingStation")
+                        .WithMany("HeatingPipes")
+                        .HasForeignKey("HeatingStationId");
 
                     b.Navigation("HeatingStation");
                 });
@@ -353,7 +364,7 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
 
             modelBuilder.Entity("Ispu.Gis.EnergyBalances.Infrastructure.Persistence.Entities.HeatingStation", b =>
                 {
-                    b.Navigation("CityDistricts");
+                    b.Navigation("HeatingPipes");
                 });
 #pragma warning restore 612, 618
         }

@@ -32,8 +32,11 @@ public class CityProfile : Profile
             expression =>
                 expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
         
-        CreateMap<HeatingStation, Domain.Entities.HeatingStation>().ForMember(x => x.Points,
+        CreateMap<HeatingStation, Domain.Entities.HeatingStation>().ForMember(x => x.GeometryPoints,
             expression =>
-                expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()));
+                expression.MapFrom(s => s.Geometry.Coordinates.Select(t => new Point(t.Y, t.X)).ToArray()))
+            .ForMember(x => x.Center,
+                expression =>
+                    expression.MapFrom(s => new Point(s.Geometry.Centroid.Y, s.Geometry.Centroid.X)));
     }
 }

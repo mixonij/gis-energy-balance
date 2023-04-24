@@ -23,6 +23,11 @@ public class HeatingStation
     /// Геометрия
     /// </summary>
     public Polygon Geometry { get; set; }
+    
+    /// <summary>
+    /// Наименование
+    /// </summary>
+    public string Name { get; set; }
 
     /// <summary>
     /// Город
@@ -30,7 +35,7 @@ public class HeatingStation
     public City City { get; set; } = null!;
 
     /// <summary>
-    /// Городские районы
+    /// Тепловые трубы
     /// </summary>
-    public List<CityDistrict> CityDistricts { get; set; } = new();
+    public List<HeatingPipe> HeatingPipes { get; set; } = new();
 }

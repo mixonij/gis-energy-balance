@@ -1,6 +1,6 @@
 ﻿namespace Ispu.Gis.EnergyBalances.Domain.Entities;
 
-public class Building: IEntity
+public class Building: IPolygonEntity
 {
     public double LivingSquare { get; set; }
     
@@ -13,7 +13,8 @@ public class Building: IEntity
     public double V => LivingSquare * 2.5;
     
     public int Id { get; set; }
-    
+    public Point Center { get; set; }
+
     /// <summary>
     /// Точки геометрии
     /// </summary>

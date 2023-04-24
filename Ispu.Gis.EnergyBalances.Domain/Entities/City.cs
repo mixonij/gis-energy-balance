@@ -9,7 +9,7 @@ public class City: IEntity
     /// Идентификатор города
     /// </summary>
     public int Id { get; set; }
-
+    
     /// <summary>
     /// Имя на английском языке
     /// </summary>

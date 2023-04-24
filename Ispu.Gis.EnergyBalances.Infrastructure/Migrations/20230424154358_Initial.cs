@@ -37,18 +37,23 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "heating_pipes",
+                name: "city_districts",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
-                    d_pod = table.Column<decimal>(type: "numeric", nullable: false),
-                    d_obr = table.Column<decimal>(type: "numeric", nullable: false),
-                    geometry = table.Column<MultiLineString>(type: "geometry(MultiLineString,4326)", nullable: false)
+                    city_id = table.Column<int>(type: "integer", nullable: false),
+                    geometry = table.Column<Polygon>(type: "geometry(Polygon,4326)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("heating_pipes_pkey", x => x.id);
+                    table.PrimaryKey("areas_pkey", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_city_districts_cities_city_id",
+                        column: x => x.city_id,
+                        principalTable: "cities",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -59,6 +64,7 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     nominal_power = table.Column<double>(type: "double precision", nullable: false),
                     city_id = table.Column<int>(type: "integer", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
                     geometry = table.Column<Polygon>(type: "geometry(Polygon,4326)", nullable: false)
                 },
                 constraints: table =>
@@ -70,32 +76,6 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         principalTable: "cities",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "city_districts",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
-                    city_id = table.Column<int>(type: "integer", nullable: false),
-                    geometry = table.Column<Polygon>(type: "geometry(Polygon,4326)", nullable: false),
-                    HeatingStationId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("areas_pkey", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_city_districts_cities_city_id",
-                        column: x => x.city_id,
-                        principalTable: "cities",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_city_districts_heating_stations_HeatingStationId",
-                        column: x => x.HeatingStationId,
-                        principalTable: "heating_stations",
-                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -120,6 +100,27 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                         name: "FK_buildings_city_districts_district_id",
                         column: x => x.district_id,
                         principalTable: "city_districts",
+                        principalColumn: "id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "heating_pipes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    d_pod = table.Column<decimal>(type: "numeric", nullable: false),
+                    d_obr = table.Column<decimal>(type: "numeric", nullable: false),
+                    heating_station_id = table.Column<int>(type: "integer", nullable: true),
+                    geometry = table.Column<MultiLineString>(type: "geometry(MultiLineString,4326)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("heating_pipes_pkey", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_heating_pipes_heating_stations_heating_station_id",
+                        column: x => x.heating_station_id,
+                        principalTable: "heating_stations",
                         principalColumn: "id");
                 });
 
@@ -183,9 +184,9 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 column: "city_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_city_districts_HeatingStationId",
-                table: "city_districts",
-                column: "HeatingStationId");
+                name: "IX_heating_pipes_heating_station_id",
+                table: "heating_pipes",
+                column: "heating_station_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_heating_pipes_id",
@@ -216,10 +217,10 @@ namespace Ispu.Gis.EnergyBalances.Infrastructure.Migrations
                 name: "buildings");
 
             migrationBuilder.DropTable(
-                name: "city_districts");
+                name: "heating_stations");
 
             migrationBuilder.DropTable(
-                name: "heating_stations");
+                name: "city_districts");
 
             migrationBuilder.DropTable(
                 name: "cities");

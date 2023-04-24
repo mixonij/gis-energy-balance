@@ -9,7 +9,7 @@ public class HeatingPipe: IEntity
     /// Идентификатор
     /// </summary>
     public int Id { get; set; }
-
+    
     /// <summary>
     /// Координаты точек геометрии
     /// </summary>

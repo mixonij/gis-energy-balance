@@ -426,6 +426,7 @@ export interface IPoint {
 
 export class CityDistrict implements ICityDistrict {
     id!: number;
+    center!: Point;
     cityId!: number;
     geometryPoints!: Point[];
     buildings!: Building[];
@@ -438,6 +439,7 @@ export class CityDistrict implements ICityDistrict {
             }
         }
         if (!data) {
+            this.center = new Point();
             this.geometryPoints = [];
             this.buildings = [];
         }
@@ -446,6 +448,7 @@ export class CityDistrict implements ICityDistrict {
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
+            this.center = _data["center"] ? Point.fromJS(_data["center"]) : new Point();
             this.cityId = _data["cityId"];
             if (Array.isArray(_data["geometryPoints"])) {
                 this.geometryPoints = [] as any;
@@ -470,6 +473,7 @@ export class CityDistrict implements ICityDistrict {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
+        data["center"] = this.center ? this.center.toJSON() : <any>undefined;
         data["cityId"] = this.cityId;
         if (Array.isArray(this.geometryPoints)) {
             data["geometryPoints"] = [];
@@ -487,6 +491,7 @@ export class CityDistrict implements ICityDistrict {
 
 export interface ICityDistrict {
     id: number;
+    center: Point;
     cityId: number;
     geometryPoints: Point[];
     buildings: Building[];
@@ -499,6 +504,7 @@ export class Building implements IBuilding {
     af!: number;
     v!: number;
     id!: number;
+    center!: Point;
     geometryPoints!: Point[];
 
     constructor(data?: IBuilding) {
@@ -509,6 +515,7 @@ export class Building implements IBuilding {
             }
         }
         if (!data) {
+            this.center = new Point();
             this.geometryPoints = [];
         }
     }
@@ -521,6 +528,7 @@ export class Building implements IBuilding {
             this.af = _data["af"];
             this.v = _data["v"];
             this.id = _data["id"];
+            this.center = _data["center"] ? Point.fromJS(_data["center"]) : new Point();
             if (Array.isArray(_data["geometryPoints"])) {
                 this.geometryPoints = [] as any;
                 for (let item of _data["geometryPoints"])
@@ -544,6 +552,7 @@ export class Building implements IBuilding {
         data["af"] = this.af;
         data["v"] = this.v;
         data["id"] = this.id;
+        data["center"] = this.center ? this.center.toJSON() : <any>undefined;
         if (Array.isArray(this.geometryPoints)) {
             data["geometryPoints"] = [];
             for (let item of this.geometryPoints)
@@ -560,6 +569,7 @@ export interface IBuilding {
     af: number;
     v: number;
     id: number;
+    center: Point;
     geometryPoints: Point[];
 }
 
@@ -727,9 +737,11 @@ export interface IGeographyPoint {
 
 export class HeatingStation implements IHeatingStation {
     id!: number;
+    center!: Point;
     cityId!: number;
     nominalPower!: number;
-    points!: Point[];
+    name!: string;
+    geometryPoints!: Point[];
 
     constructor(data?: IHeatingStation) {
         if (data) {
@@ -739,19 +751,22 @@ export class HeatingStation implements IHeatingStation {
             }
         }
         if (!data) {
-            this.points = [];
+            this.center = new Point();
+            this.geometryPoints = [];
         }
     }
 
     init(_data?: any) {
         if (_data) {
             this.id = _data["id"];
+            this.center = _data["center"] ? Point.fromJS(_data["center"]) : new Point();
             this.cityId = _data["cityId"];
             this.nominalPower = _data["nominalPower"];
-            if (Array.isArray(_data["points"])) {
-                this.points = [] as any;
-                for (let item of _data["points"])
-                    this.points!.push(Point.fromJS(item));
+            this.name = _data["name"];
+            if (Array.isArray(_data["geometryPoints"])) {
+                this.geometryPoints = [] as any;
+                for (let item of _data["geometryPoints"])
+                    this.geometryPoints!.push(Point.fromJS(item));
             }
         }
     }
@@ -766,12 +781,14 @@ export class HeatingStation implements IHeatingStation {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["id"] = this.id;
+        data["center"] = this.center ? this.center.toJSON() : <any>undefined;
         data["cityId"] = this.cityId;
         data["nominalPower"] = this.nominalPower;
-        if (Array.isArray(this.points)) {
-            data["points"] = [];
-            for (let item of this.points)
-                data["points"].push(item.toJSON());
+        data["name"] = this.name;
+        if (Array.isArray(this.geometryPoints)) {
+            data["geometryPoints"] = [];
+            for (let item of this.geometryPoints)
+                data["geometryPoints"].push(item.toJSON());
         }
         return data;
     }
@@ -779,9 +796,11 @@ export class HeatingStation implements IHeatingStation {
 
 export interface IHeatingStation {
     id: number;
+    center: Point;
     cityId: number;
     nominalPower: number;
-    points: Point[];
+    name: string;
+    geometryPoints: Point[];
 }
 
 export class ApiException extends Error {
